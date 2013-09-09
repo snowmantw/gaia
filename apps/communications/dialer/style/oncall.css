@@ -137,7 +137,8 @@ body.hidden *[data-l10n-id] {
 }
 
 #call-screen[data-layout="incoming-locked"] {
-  opacity: 0;
+  /* DEBUG */
+  /*opacity: 0;*/
   transition: opacity 1s ease;
 }
 
@@ -729,3 +730,4 @@ button[disabled] .icon {
 #call-screen[data-layout="incoming-locked"] #calls {
   top: 14rem;
 }
+

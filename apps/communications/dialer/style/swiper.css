@@ -23,7 +23,7 @@
   background-position: center;
   background-repeat: no-repeat;
   background-size: 4.1rem;
-  margin-left: 4.2rem;
+  margin-left: 2.4rem;
   margin-right: auto;
   transition: opacity 0.5s ease;
 }
@@ -40,21 +40,12 @@
 }
 .swiper-icon-left {
   left: 0;
-  border-top: 0.1rem solid #F80000;
-}
-.swiper-icon-right > div {
-  border: 0.2rem solid #82C82D;
-}
-.swiper-icon-left > div {
-  border: 0.2rem solid #F80000;
 }
 
 .swiper-icon {
   margin-top: 2rem;
-  border-radius: 3.2rem;
-  width: 6.4rem;
-  height: 6.4rem;
-  background-color: rgba(0, 0, 0, 0.7);
+  width: 6rem;
+  height: 6rem;
   -moz-box-sizing: border-box;
   pointer-events: none;
 }
@@ -64,11 +55,8 @@
 }
 
 .swiper-icon-area {
-  width: -moz-calc(50%);
   height: 100%;
   position: absolute;
-  background-image: linear-gradient(to bottom,
-                    rgba(0,0,0,0.8), rgba(0,0,0,0.2) 20%);
   pointer-events: none;
 }
 
@@ -81,8 +69,8 @@
   background-image: url("images/pickup_icon.png");
   background-position: center;
   background-repeat: no-repeat;
-  background-size: 3.2rem;
-  margin-right: 4.2rem;
+  background-size: 3rem;
+  margin-right: 2.4rem;
   margin-left: auto;
   transition: opacity 0.5s ease;
 }
@@ -99,7 +87,6 @@
 }
 .swiper-icon-right {
   right: 0;
-  border-top: 0.1rem solid #83C72B;
 }
 
 /* swiper-area-handle */
@@ -131,12 +118,13 @@
 }
 
 #swiper-icon-container {
+  background-image: linear-gradient(to bottom,
+                    rgba(0,0,0,0.8), rgba(0,0,0,0.2) 20%);
+  bottom: 0px;
   position: absolute;
   width: 100%;
-  bottom: -8rem;
   height: 10rem;
   pointer-events: none;
-  padding-top: 2rem;
   transition:
     transform 0.5s ease,
     opacity 0.5s ease;
@@ -215,3 +203,116 @@
 .elastic #swiper-icon-container {
   animation: swiper-elastic 1.3s infinite;
 }
+
+#swiper-area-slider {
+  text-align: center;
+  width: calc(100%);
+}
+
+#swiper-slider-handler {
+  position: relative;
+  top: -8.3rem;
+}
+
+@media (orientation:landscape) {
+  #swiper-area-slider #swiper-slider-track .swiper-slider-center {
+    width: 35rem;
+  }
+}
+
+@media (orientation:portrait) {
+  #swiper-area-slider #swiper-slider-track .swiper-slider-center {
+    width: 22rem;
+  }
+}
+
+@media (min-width:768px) and (orientation:landscape) {
+  #swiper-area-slider #swiper-slider-track .swiper-slider-center {
+    width: 115rem;
+  }
+}
+
+@media (min-width:768px) and (orientation:portrait) {
+  #swiper-area-slider #swiper-slider-track .swiper-slider-center {
+    width: 67rem;
+  }
+}
+
+#swiper-area-slider #swiper-slider-track .swiper-icon {
+  border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+#swiper-area-slider .swiper-icon {
+   background-color: rgba(0, 0, 0, 0.3);
+   -moz-box-sizing: border-box;
+   border: 0.2rem solid rgba(255, 255, 255, 0.8);
+  /* Will become wider while user pull it */
+  transition: width 0.2s ease;
+}
+
+#swiper-area-slider .swiper-slider-left.swiper-icon {
+  /* half-circle toward left */
+  border-radius: 6rem 0 0 6rem;
+  border-right: none;
+  display: inline-block;
+
+  /* to move it while sliding */
+  position: relative;
+  height: 6rem;
+  width: 3rem;
+}
+
+.swiper-slider-left.swiper-icon > span {
+  /* float to prevent its parent got wrong place */
+  float: left;
+  font-size: 32pt;
+  margin-left: 0.5rem;
+}
+
+.swiper-slider-left.touched > span {
+  display: none;
+}
+
+.swiper-slider-right.touched> span {
+  display: none;
+}
+
+#swiper-area-slider .swiper-slider-center.swiper-icon {
+  display: inline-block;
+  border-left: none;
+  border-right: none;
+  border-radius: 0rem;
+  
+  /* workaround for splitting circle */
+  margin-left: -0.3rem;
+  margin-right: -0.3rem;
+
+  /* to move and scale it while sliding */
+  position: relative;
+  width: 1px; /* for the default circle */
+}
+
+#swiper-area-slider .touched {
+  border-color: #00aacc;
+  background-color:  #00aacc;
+}
+
+#swiper-area-slider .swiper-slider-right.swiper-icon {
+  border-left: none;
+
+  /* half-circle toward right */
+  border-radius: 0 6rem 6rem 0;
+  display: inline-block;
+  height: 6rem;
+
+  /* to move it while sliding */
+  position: relative;
+  width: 3rem;
+}
+
+.swiper-slider-right.swiper-icon > span {
+  /* float to prevent its parent got wrong place */
+  float: right;
+  font-size: 32pt;
+  margin-right: 0.5rem;
+ }

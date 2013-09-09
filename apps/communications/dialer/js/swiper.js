@@ -16,6 +16,22 @@ var Swiper = {
   */
   HANDLE_MAX: 70,
 
+  /*
+  * If user is sliding.
+  */
+  _sliderPulling: false,
+
+  /*
+  * If user released the finger and the handler had already
+  * reached one of the ends.
+  */
+  _sliderReachEnd: false,
+
+  /*
+  * Detect if sliding crossed the middle line.
+  */
+  _slidingToward: '',
+
   /* init */
   init: function ls_init() {
     this.getAllElements();
@@ -25,7 +41,9 @@ var Swiper = {
     this.areaPickup.addEventListener('click', this);
     this.overlay.addEventListener('transitionend', this);
 
+    /* DEBUG
     this.setElasticEnabled(true);
+    */
   },
 
   handleEvent: function ls_handleEvent(evt) {
@@ -40,7 +58,12 @@ var Swiper = {
           break;
         }
 
+        if (evt.target === this.area)
+          this.handleSlideBegin();
+
+        /* DEBUG
         this.setElasticEnabled(false);
+        */
 
         this._touch = {};
         window.addEventListener('touchend', this);
@@ -56,12 +79,14 @@ var Swiper = {
 
       case 'touchmove':
         this.handleMove(evt.touches[0].pageX, evt.touches[0].pageY);
+        this.handleSlide();
         break;
 
       case 'touchend':
         window.removeEventListener('touchmove', this);
         window.removeEventListener('touchend', this);
-        this.handleGesture();
+        this.handleSlideEnd();
+        this.handleMove(evt.touches[0].pageX, evt.touches[0].pageY);
         delete this._touch;
         this.overlay.classList.remove('touched');
 
@@ -79,6 +104,164 @@ var Swiper = {
         }
         break;
     }
+  },
+
+  handleSlideBegin: function() {
+    this.restoreSlider();
+  },
+
+  handleSlide: function() {
+
+    if (!this._sliderPulling)
+      return;
+
+    var tx = this._touch.tx;
+    var dir = 'right';
+    if (0 > tx)
+      var dir = 'left';
+
+    // Drag from left to right or counter-direction.
+    if ('' !== this._slidingToward && dir !== this._slidingToward) {
+      this.restoreSlider();
+    }
+    this._slidingToward = dir;
+
+    // Unsigned.
+    var utx = Math.abs(tx);
+
+    // XXX: the overlay area between center and the left & right.
+    // When the movement offset is even (86px for ex),
+    // the glitch will be the left, and when it's odd,
+    // the glitch will be the right.
+    var glitchC = 0;
+
+    // Thanks the color effect on the slider, we can overlay icons
+    // without any obvious glitches.
+    var glitchS = 5;
+
+
+    // XXX: lots of try and errors
+    if ('right' === dir) {
+      glitchC = (0 === utx % 2) ? -1 : 0;
+    } else {
+      glitchC = (0 === utx % 2) ? 0 : 0;
+    }
+
+    // Detect if the finger reached the one of end of these two areas.
+    // Don't use pre-defined one because the icon may be changed.
+    var slcLeft = '#swiper-icon-container .swiper-icon-left';
+    var slcRight = '#swiper-icon-container .swiper-icon-right';
+    var leftIcon = document.querySelector(slcLeft);
+    var rightIcon = document.querySelector(slcRight);
+
+    var trackLength = rightIcon.offsetLeft -
+                      leftIcon.offsetLeft +
+                      rightIcon.clientWidth;
+    var maxLength = Math.floor(trackLength / 2);
+
+    var boundaryLeft = leftIcon.offsetLeft;
+    var boundaryRight = rightIcon.offsetLeft + rightIcon.clientWidth;
+
+    var offset = utx;
+
+    // If the front-end slider reached the boundary.
+    // We plus and minus the icon width because maxLength should be fixed,
+    // and only the handler and the blue occured area should be adjusted.
+    if (offset + this.sliderLeft.clientWidth > maxLength) {
+      this._sliderReachEnd = true;
+      offset = maxLength - this.sliderLeft.clientWidth;
+
+      // TODO: ---- NEED TO IMPLEMENT LIKE IN lockscreen.js ----
+      this.handleIconClick('left' === dir ? leftIcon : rightIcon);
+    }
+
+    // Start to paint the slider.
+    this.sliderLeft.classList.add('pulling');
+    this.sliderRight.classList.add('pulling');
+
+    var subject = ('right' === dir) ? this.sliderRight : this.sliderLeft;
+    var cntsubject = ('right' === dir) ? this.sliderLeft : this.sliderRight;
+
+    // 'translateX' will move it according to the left border.
+    if ('right' === dir) {
+      subject.style.transform = 'translateX(' + offset + 'px)';
+    } else {
+      subject.style.transform = 'translateX(-' + offset + 'px)';
+    }
+
+    // Need to set this to let transition event triggered while
+    // we bounce the handlers back.
+    // @see `restoreSlider`
+    cntsubject.style.transform = 'translateX(0px)';
+
+    // Move center as long as half of the offset, then scale it.
+    var cMove = Math.floor(offset / 2 + glitchC);
+    var cScale = offset + glitchS;
+
+    if ('right' === dir) {
+      this.sliderCenter.style.transform = 'translateX(' + cMove + 'px)';
+    } else {
+      this.sliderCenter.style.transform = 'translateX(-' + cMove + 'px)';
+    }
+    this.sliderCenter.style.transform += 'scaleX(' + cScale + ')';
+
+    // Add the effects to these icons.
+    this.sliderLeft.classList.add('touched');
+    this.sliderCenter.classList.add('touched');
+    this.sliderRight.classList.add('touched');
+  },
+
+  // Restore all slider elements.
+  //
+  // easing {Boolean} true|undefined to bounce back slowly.
+  restoreSlider: function(easing) {
+
+    // Mimic the `getAllElements` function...
+    [this.sliderLeft, this.sliderRight, this.sliderCenter]
+      .forEach(function ls_rSlider(h) {
+        if (easing) {
+
+          // To prevent magic numbers...
+          var bounceBackTime = '0.3s';
+
+          // Add transition to let it bounce back slowly.
+          h.style.transition = 'transform ' + bounceBackTime + ' ease 0s';
+
+          var tsEnd = function ls_tsEnd(evt) {
+            h.style.transition = '';
+
+            // Remove the effects to these icons.
+            h.classList.remove('touched');
+            h.removeEventListener('transitionend', tsEnd);
+          };
+          h.addEventListener('transitionend', tsEnd);
+
+        } else {
+          h.style.transition = '';
+
+          // Remove the effects on these icons.
+          h.classList.remove('touched');
+        }
+
+        // After setup, bounce it back.
+        h.style.transform = '';
+    });
+
+    this._sliderPulling = true;
+    this._sliderReachEnd = false;
+  },
+
+  handleSlideEnd: function() {
+
+    // Bounce back to the center immediately.
+    if (false === this._sliderReachEnd) {
+      this.restoreSlider(true);
+    } else {
+      // Restore it only after screen changed.
+      var appLaunchDelay = 400;
+      setTimeout(this.restoreSlider.bind(this, true), appLaunchDelay);
+    }
+    this._sliderPulling = false;
   },
 
   handleMove: function ls_handleMove(pageX, pageY) {
@@ -99,13 +282,8 @@ var Swiper = {
 
     var dy = pageY - touch.initY;
     var ty = Math.max(- this.HANDLE_MAX, dy);
-    var base = - ty / this.HANDLE_MAX;
-    // mapping position 20-100 to opacity 0.1-0.5
-    var opacity = base <= 0.2 ? 0.1 : base * 0.5;
     touch.ty = ty;
-    this.iconContainer.style.transform = 'translateY(' + ty + 'px)';
-    this.iconPickup.style.opacity =
-      this.iconHangup.style.opacity = opacity;
+    touch.tx = pageX - touch.initX;
   },
 
   handleGesture: function ls_handleGesture() {
@@ -124,15 +302,17 @@ var Swiper = {
         setTimeout(this.unloadPanel.bind(this), this.TRIGGERED_TIMEOUT);
     } else {
       this.unloadPanel();
+      /* DEBUG
       this.setElasticEnabled(true);
+      */
     }
   },
 
   getAllElements: function ls_getAllElements() {
     // ID of elements to create references
     var elements = ['area', 'area-pickup', 'area-hangup', 'area-handle',
-        'icon-container', 'hangup-mask', 'pickup-mask',
-        'accessibility-hangup', 'accessibility-pickup'];
+        'icon-container', 'hangup-mask', 'pickup-mask', 'area-slider',
+        'slider-handler', 'accessibility-hangup', 'accessibility-pickup'];
 
     var toCamelCase = function toCamelCase(str) {
       return str.replace(/\-(.)/g, function replacer(str, p1) {
@@ -148,6 +328,10 @@ var Swiper = {
     this.mainScreen = document.getElementById('call-screen');
     this.iconPickup = document.querySelector('#swiper-area-pickup > div');
     this.iconHangup = document.querySelector('#swiper-area-hangup > div');
+
+    this.sliderLeft = this.sliderHandler.getElementsByTagName('div')[0];
+    this.sliderCenter = this.sliderHandler.getElementsByTagName('div')[1];
+    this.sliderRight = this.sliderHandler.getElementsByTagName('div')[2];
   },
   setElasticEnabled: function ls_setElasticEnabled(value) {
     if (value)
@@ -169,7 +353,9 @@ var Swiper = {
     this.iconHangup.classList.remove('triggered');
 
     clearTimeout(this.triggeredTimeoutId);
+    /* DEBUG
     this.setElasticEnabled(true);
+    */
   }
 };
 
