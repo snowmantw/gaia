@@ -1,0 +1,56 @@
+{
+  "name": "Vk",
+  "description": "Voronoi Keyboard",
+  "launch_path": "/index.html",
+  "developer": {
+    "name": "The Gaia Team",
+    "url": "https://github.com/mozilla-b2g/gaia"
+  },
+  "locales": {
+    "ar": {
+      "name": "Vk",
+      "description": "Web app template"
+    },
+    "de": {
+      "name": "Vk",
+      "description": "Web app template"
+    },
+    "el": {
+      "name": "Vk",
+      "description": "Web app template"
+    },
+    "en-US": {
+      "name": "Vk",
+      "description": "Web app template"
+    },
+    "es": {
+      "name": "Vk",
+      "description": "Web app template"
+    },
+    "fr": {
+      "name": "Vk",
+      "description": "Web app template"
+    },
+    "it": {
+      "name": "Vk",
+      "description": "Web app template"
+    },
+    "pt-BR": {
+      "name": "Vk",
+      "description": "Web app template"
+    },
+    "ru": {
+      "name": "Vk",
+      "description": "Web app template"
+    },
+    "tr": {
+      "name": "Vk",
+      "description": "Web app template"
+    },
+    "zh-TW": {
+      "name": "Vk",
+      "description": "Web app template"
+    }
+  },
+  "default_locale": "en-US"
+}
