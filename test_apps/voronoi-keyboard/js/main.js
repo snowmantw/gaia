@@ -1,8 +1,8 @@
 // TODO: Graph traversal algorithm & seamless creating polygon
 
 const MIN_WEIGHT = 10;
-const CANVAS_HEIGHT = 300;
-const CANVAS_WIDTH  = 300;
+const CANVAS_HEIGHT = 200;
+const CANVAS_WIDTH  = 350;
 const MAX_VHEIGHT = 100;
 const MAX_VWIDTH  = 100;
 
@@ -21,6 +21,7 @@ var VoronoiKeyboard =  {
       'thesi': {'s': 2}
     },
   keyHistory: [],
+  vertexHistory: [],
 
   init: function vk_init() {
     VoronoiKeyboard.weights = VoronoiKeyboard.demoWeightsCache();
@@ -31,6 +32,11 @@ var VoronoiKeyboard =  {
        .attr("width", CANVAS_WIDTH)
        .attr("height", CANVAS_HEIGHT)
        .attr("class", "PiYG")
+
+    document.getElementById('backspace')
+      .addEventListener('click', function(){ 
+        console.log('a++ ++b');
+        VoronoiKeyboard.backspace(); });
   },
 
   // Give original coordinates of the keys.
@@ -88,13 +94,21 @@ var VoronoiKeyboard =  {
 
     var self = this;
     function redraw() {
-      path = path.data(voronoi(cvertices).map(function(d) { return "M" + d.join("L") + "Z"; }), String);
+
+      var keys = [];
+      path = path.data(voronoi(cvertices).map(function(d, i) { keys.push(cvertices[i][2]);  return "M" + d.join("L") + "Z"; }), String);
       path.exit().remove();
-      path.enter().append("path").attr("class", function(d, i) {
-        var vertix = cvertices[i];
-        return vertix[3] > 1 ? "active" : (
-             VoronoiKeyboard.keyHistory.indexOf(vertix[2]) > -1 ? "typed" : "normal");
-      }).attr("d", String);
+      path.enter().append("path")
+        .attr("class", function(d, i) {
+          var vertix = cvertices[i];
+          return vertix[3] > 1 ? "active" : (
+               VoronoiKeyboard.keyHistory.indexOf(vertix[2]) > -1 ? "typed" : "normal");
+        })
+        .attr("key", function(d, i) {
+          return keys[i];
+        })
+        .attr("d", String)
+        .on("click", function() { DEBUG=this; console.log('++input++', this.getAttribute('key'));VoronoiKeyboard.inputKey(this.getAttribute('key')); });
       path.order();
     }
   },
@@ -187,11 +201,13 @@ var VoronoiKeyboard =  {
   backspace: function vk_backspace() {
     this.keyHistory.splice(this.keyHistory.length - 1, 1);
     this.drawKeyboard(this.demoWeight[this.keyHistory.join('')]);
+    document.getElementById('user-input').textContent = VoronoiKeyboard.keyHistory.join("");
   },
 
   inputKey: function vk_inputKey(k) {
     this.keyHistory.push(k);
     this.drawKeyboard(this.demoWeight[this.keyHistory.join('')]);
+    document.getElementById('user-input').textContent = VoronoiKeyboard.keyHistory.join("");
   },
 
   loopString: function vk_loopString(str, cb) {
@@ -233,3 +249,5 @@ var VoronoiKeyboard =  {
 }
 
 VoronoiKeyboard.init();
+
+VoronoiKeyboard.drawKeyboard();
