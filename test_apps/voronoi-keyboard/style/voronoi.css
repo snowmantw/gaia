@@ -14,3 +14,15 @@ circle {
   stroke: #000;
   pointer-events: none;
 }
+
+.typed {
+  fill: yellow;
+}
+
+.normal {
+  fill: white;
+}
+
+.active {
+  fill: red;
+}

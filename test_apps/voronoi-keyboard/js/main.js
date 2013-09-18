@@ -20,6 +20,7 @@ var VoronoiKeyboard =  {
       's': {'i': 2},
       'i': {'s': 2}
     },
+  keyHistory: [],
 
   init: function vk_init() {
     VoronoiKeyboard.weights = VoronoiKeyboard.demoWeightsCache();
@@ -85,10 +86,15 @@ var VoronoiKeyboard =  {
         .attr("transform", function(d) { return "translate(" + d[0] + ',' + d[1] + ")"; })
         .attr("r", 2);*/
 
+    var self = this;
     function redraw() {
       path = path.data(voronoi(cvertices).map(function(d) { return "M" + d.join("L") + "Z"; }), String);
       path.exit().remove();
-      path.enter().append("path").attr("class", function(d, i) { return "q" + (i % 9) + "-9"; }).attr("d", String);
+      path.enter().append("path").attr("class", function(d, i) {
+        var vertix = cvertices[i];
+        return vertix[3] > 1 ? "active" : (
+             VoronoiKeyboard.keyHistory.indexOf(vertix[2]) > -1 ? "typed" : "normal");
+      }).attr("d", String);
       path.order();
     }
   },
@@ -179,6 +185,7 @@ var VoronoiKeyboard =  {
   },
 
   inputKey: function vk_inputKey(k) {
+    this.keyHistory.push(k);
     this.drawKeyboard(this.demoWeight[k]);
   },
 
@@ -208,9 +215,7 @@ var VoronoiKeyboard =  {
         var strWeight = 1 + (weight[k] ? weight[k] : 0);
         var currentWidth = layoutCount * charWidth + charWidth * strWeight / 2;
         layoutCount += strWeight;
-        vertices.push([currentWidth, currentHeight, k]);
-        console.log('weight: ', strWeight, k);
-        console.log(currentWidth, currentHeight, k);
+        vertices.push([currentWidth, currentHeight, k, strWeight]);
       });
     }
 
