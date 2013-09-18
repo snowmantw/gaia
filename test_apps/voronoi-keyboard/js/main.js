@@ -12,6 +12,14 @@ var VoronoiKeyboard =  {
   weights: null,
   kcoords: null,
   svg: null,
+  keys: ['qwertyuiop', 'asdfghjkl', ' zxcvbnm '],
+  demoWeight: {
+      't': {'h': 2, 'e': 1},
+      'h': {'e': 1, 'i': 3},
+      'e': {'s': 2},
+      's': {'i': 2},
+      'i': {'s': 2}
+    },
 
   init: function vk_init() {
     VoronoiKeyboard.weights = VoronoiKeyboard.demoWeightsCache();
@@ -64,11 +72,18 @@ var VoronoiKeyboard =  {
     var path = svg.append("g").selectAll("path");
     redraw();
 
-    svg.selectAll("circle")
+    svg.selectAll('text')
+        .data(cvertices)
+      .enter().append('text')
+        .attr("x", function(d) { return d[0] - 6;})
+        .attr("y", function(d) { return d[1] - 6;})
+        .text( function(d) { return d[2];} );
+
+    /*svg.selectAll("circle")
         .data(cvertices)
       .enter().append("circle")
         .attr("transform", function(d) { return "translate(" + d[0] + ',' + d[1] + ")"; })
-        .attr("r", 2);
+        .attr("r", 2);*/
 
     function redraw() {
       path = path.data(voronoi(cvertices).map(function(d) { return "M" + d.join("L") + "Z"; }), String);
@@ -161,6 +176,49 @@ var VoronoiKeyboard =  {
     inputs.forEach( function vk_triggerInput(e, i, a) {
       setTimeout(function() { VoronoiKeyboard.demoHandleInput(e) }, inputWaits*i);
     });
+  },
+
+  inputKey: function vk_inputKey(k) {
+    this.drawKeyboard(this.demoWeight[k]);
+  },
+
+  loopString: function vk_loopString(str, cb) {
+    for (var j = 0; j < str.length; j++) {
+      cb(str[j], j);
+    }
+  },
+
+  drawKeyboard: function vk_drawKeyboard(weight) {
+    if (!weight) {
+      weight = {};
+    }
+    var vertices = [];
+    var lineHeight = CANVAS_HEIGHT / this.keys.length;
+    for (var i = 0; i < this.keys.length; i++) {
+      var currentHeight = i * lineHeight + lineHeight / 2;
+
+      var itemCounts = this.keys[i].length;
+      this.loopString(this.keys[i], function(k, j) {
+        itemCounts += (weight[k] ? weight[k] : 0);
+      });
+
+      var charWidth = CANVAS_WIDTH / itemCounts;
+      var layoutCount = 0;
+      this.loopString(this.keys[i], function(k, j) {
+        var strWeight = 1 + (weight[k] ? weight[k] : 0);
+        var currentWidth = layoutCount * charWidth + charWidth * strWeight / 2;
+        layoutCount += strWeight;
+        vertices.push([currentWidth, currentHeight, k]);
+        console.log('weight: ', strWeight, k);
+        console.log(currentWidth, currentHeight, k);
+      });
+    }
+
+    // Remove old one.
+    var svg = document.querySelector('#chart svg');
+    svg.innerHTML = '';
+
+    this.demoRenderKeyboard(vertices);
   }
 }
 
