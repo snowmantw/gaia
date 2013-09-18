@@ -1,9 +1,8 @@
-// TODO: vertics can't be the same!
-// Duplicated SVGs!
+// TODO: Graph traversal algorithm & seamless creating polygon
 
 const MIN_WEIGHT = 10;
-const CANVAS_HEIGHT = 960;
-const CANVAS_WIDTH  = 500;
+const CANVAS_HEIGHT = 300;
+const CANVAS_WIDTH  = 300;
 const MAX_VHEIGHT = 100;
 const MAX_VWIDTH  = 100;
 
@@ -11,10 +10,12 @@ var VoronoiKeyboard =  {
 
   elCanvas: null,
   weights: null,
+  kcoords: null,
   svg: null,
 
   init: function vk_init() {
     VoronoiKeyboard.weights = VoronoiKeyboard.demoWeightsCache();
+    VoronoiKeyboard.kcoords = VoronoiKeyboard.demoKeyOrigins();
 
     VoronoiKeyboard.svg = d3.select("#chart")
        .append("svg:svg")
@@ -22,6 +23,18 @@ var VoronoiKeyboard =  {
        .attr("height", CANVAS_HEIGHT)
        .attr("class", "PiYG")
   },
+
+  // Give original coordinates of the keys.
+  demoKeyOrigins: function vk_demoKeyOrigins() {
+    demo = {
+      't': [285, 8],
+      'h': [230, 4],
+      'e': [170, 32],
+      's': [35, 80],
+      'i': [100, 32]
+    };
+    return demo;
+  }, 
 
   demoWeightsCache: function vk_demoWeightsCache() {
     demo = {
@@ -36,55 +49,109 @@ var VoronoiKeyboard =  {
 
   // Given height and weights of each polygon, then render it.
   // vertices: [ [Number (width), Number (height)] ]
-  demoRenderKeyboard: function vk_demoRenderKeyboard(vertices) {
 
-    console.log('++++ vs ++++', vertices);
+  demoRenderKeyboard: function vk_demoRenderKeyboard(cvertices) {
+
     var svg = VoronoiKeyboard.svg;
-    var vvs = d3.geom.voronoi(vertices);
 
-      svg.selectAll("path")
-         .data(vvs)
-         .enter().append("svg:path")
-         .attr("class", function(d, i) { return i ? "q" + (i % 9) + "-9" : null; })
-         .attr("d", function(d) { return "M" + d.join("L") + "Z"; });
+    var vertices = d3.range(6).map(function(d) {
+      return [Math.random() * CANVAS_WIDTH, Math.random() * CANVAS_HEIGHT];
+    });
 
-      svg.selectAll("circle")
-         .data(vertices.slice(1))
-         .enter().append("svg:circle")
-         .attr("transform", function(d) { return "translate(" + d + ")"; })
-         .attr("r", 2);
+    var voronoi = d3.geom.voronoi()
+        .clipExtent([[0, 0], [CANVAS_WIDTH, CANVAS_HEIGHT]]);
 
-     function update() {
-       vertices[0] = d3.svg.mouse(VoronoiKeyboard);
-       svg.selectAll("path")
-           .data(d3.geom.voronoi(vertices)
-           .map(function(d) { return "M" + d.join("L") + "Z"; }))
-           .filter(function(d) { return VoronoiKeyboard.getAttribute("d") != d; })
-           .attr("d", function(d) { return d; });
-     }
+    var path = svg.append("g").selectAll("path");
+    redraw();
+
+    svg.selectAll("circle")
+        .data(cvertices)
+      .enter().append("circle")
+        .attr("transform", function(d) { return "translate(" + d[0] + ',' + d[1] + ")"; })
+        .attr("r", 2);
+
+    function redraw() {
+      path = path.data(voronoi(cvertices).map(function(d) { return "M" + d.join("L") + "Z"; }), String);
+      path.exit().remove();
+      path.enter().append("path").attr("class", function(d, i) { return "q" + (i % 9) + "-9"; }).attr("d", String);
+      path.order();
+    }
+  },
+
+  // Can print test and can show the circles but need heavy tunning.
+  depracated__demoRenderKeyboard: function vk_demoRenderKeyboard(cvertices) {
+
+    var svg = VoronoiKeyboard.svg;
+
+    var voronoi = d3.geom.voronoi()
+        .clipExtent([[0, 0], [CANVAS_WIDTH, CANVAS_HEIGHT]]);
+
+    var vvs = voronoi(cvertices);
+    redraw();
+    svg.selectAll("circle")
+        .data(cvertices)
+      .enter().append("circle")
+        .attr("transform", function(vc) { 
+          var w = vc[0];
+          var h = vc[1];
+          return "translate(" + (w/2) + ',' + (h/2) + ")"; 
+         })
+        .attr("r", 4)
+
+    var calcMid = function(p1, p2) {
+      return [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2]
+    };
+    var vcs = voronoi(cvertices);
+    var tds = [];
+    vcs.forEach(function(d, i) { tds.push([ calcMid(d[0], d[1]), cvertices[i][2] ]) });
+    svg.selectAll('text')
+        .data(tds)
+      .enter().append('text')
+        .attr("x", function(d) { return d[0][0]})
+        .attr("y", function(d) { return d[0][1]})
+        .text( function(d) { return d[1] } );
+
+    function redraw() {
+
+      var path = svg.append("g").selectAll("path");
+      var vcs = voronoi(cvertices);
+      path = path.data(vcs.map(function(d) { return "M" + d.join("L") + "Z"; }), String);
+      path.exit().remove();
+      path.enter().append("path").attr("class", function(d, i) { return "q" + (i % 9) + "-9"; }).attr("d", String);
+      path.order();
+    }
   },
 
   demoUpdateKeyboard: function vk_demoUpdateKeyboard(weights) {
 
-    // From weight to h/w -> points.
-    var vertices = [];
+    // From weight to new polygon's center pointer.
+    var cvertices = [];
     weights.forEach(function(weight, idx) {
       var c = _.keys(weight)[0];
       var w = weight[c];
 
-      // From weight to width & height.
-      // TODO
-      var wd  = (idx+1) * w;
-      var h   = (idx+1) * w;
-      vertices.push([wd, h]);
+      // From weight to new polygon's center pointer.
+      // TODO: finish the algorithm.
+      var wd = VoronoiKeyboard.kcoords[c][0];
+      var h  =VoronoiKeyboard.kcoords[c][1];
+      cvertices.push([wd, h, c]);
     });
 
+    // Remove old one.
+    var svg = document.querySelector('#chart svg');
+    svg.innerHTML = '';
+
     // Render it.
-    VoronoiKeyboard.demoRenderKeyboard(vertices);
+    VoronoiKeyboard.demoRenderKeyboard(cvertices);
+  },
+
+  currentChar: function vk_currentChar(c) {
+    document.querySelector('#user-input').textContent += c;
   },
 
   demoHandleInput: function vk_demoHandleInput(c) {
     // Get the weights and refresh the whole keyboard.
+    VoronoiKeyboard.currentChar(c);
     VoronoiKeyboard.demoUpdateKeyboard(VoronoiKeyboard.weights[c]);
   },
 
@@ -92,9 +159,9 @@ var VoronoiKeyboard =  {
     var inputWaits = 3000;
     var inputs = ['t', 'h', 'e', 's', 'i', 's'];
     inputs.forEach( function vk_triggerInput(e, i, a) {
-      setTimeout(function() { VoronoiKeyboard.demoHandleInput(e) }, inputWaits);
+      setTimeout(function() { VoronoiKeyboard.demoHandleInput(e) }, inputWaits*i);
     });
-  },
+  }
 }
 
 VoronoiKeyboard.init();
