@@ -15,10 +15,10 @@ var VoronoiKeyboard =  {
   keys: ['qwertyuiop', 'asdfghjkl', ' zxcvbnm '],
   demoWeight: {
       't': {'h': 2, 'e': 1},
-      'h': {'e': 1, 'i': 3},
-      'e': {'s': 2},
-      's': {'i': 2},
-      'i': {'s': 2}
+      'th': {'e': 1, 'i': 3},
+      'the': {'s': 2},
+      'thes': {'i': 2},
+      'thesi': {'s': 2}
     },
   keyHistory: [],
 
@@ -184,9 +184,14 @@ var VoronoiKeyboard =  {
     });
   },
 
+  backspace: function vk_backspace() {
+    this.keyHistory.splice(this.keyHistory.length - 1, 1);
+    this.drawKeyboard(this.demoWeight[this.keyHistory.join('')]);
+  },
+
   inputKey: function vk_inputKey(k) {
     this.keyHistory.push(k);
-    this.drawKeyboard(this.demoWeight[k]);
+    this.drawKeyboard(this.demoWeight[this.keyHistory.join('')]);
   },
 
   loopString: function vk_loopString(str, cb) {
