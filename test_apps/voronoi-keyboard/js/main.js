@@ -49,6 +49,8 @@ var VoronoiKeyboard =  {
       .addEventListener('click', function(){ 
         console.log('a++ ++b');
         VoronoiKeyboard.backspace(); });
+
+    this.demoWeight = DICT;
   },
 
   // Give original coordinates of the keys.
