@@ -31,7 +31,21 @@ marionette('lockscreen tests:', function() {
     // After FTU disappears, the lockscreen is not displayed.
     lockscreen.lock();
 
-    client.waitFor(function() { return lockscreen.locked }, 10000);
+    client.executeScript(function() {
+
+      window.wrappedJSObject.LockScreen.area.addEventListener('touchstart',
+        function() {
+          window.wrappedJSObject.LockScreen.area.style.backgroundColor = 'cyan';
+          window.wrappedJSObject.LockScreen.area.style.height = '400rem';
+      });
+
+      window.wrappedJSObject.LockScreen.area.addEventListener('click',
+        function() {
+          window.wrappedJSObject.LockScreen.area.style.backgroundColor = 'red';
+      });
+    }, []);
+
+    wait.sec(30);
 
     // Move the handle to the right. 300px should be enough.
     (new Marionette.Actions(client))
@@ -60,7 +74,21 @@ marionette('lockscreen tests:', function() {
       // After FTU disappears, the lockscreen is not displayed.
     lockscreen.lock();
 
-    client.waitFor(function() { return lockscreen.locked }, 10000);
+    client.executeScript(function() {
+
+      window.wrappedJSObject.LockScreen.area.addEventListener('touchstart',
+        function() {
+          window.wrappedJSObject.LockScreen.area.style.backgroundColor = 'cyan';
+          window.wrappedJSObject.LockScreen.area.style.height = '400rem';
+      });
+
+      window.wrappedJSObject.LockScreen.area.addEventListener('click',
+        function() {
+          window.wrappedJSObject.LockScreen.area.style.backgroundColor = 'red';
+      });
+    }, []);
+
+    wait.sec(30);
 
     // Move the handle to the right. 60px should be enough.
     (new Marionette.Actions(client))
