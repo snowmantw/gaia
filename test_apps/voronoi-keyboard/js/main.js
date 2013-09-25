@@ -2,7 +2,7 @@
 
 const MIN_WEIGHT = 10;
 const CANVAS_HEIGHT = 200;
-const CANVAS_WIDTH  = 350;
+const CANVAS_WIDTH  = 300;
 const MAX_VHEIGHT = 100;
 const MAX_VWIDTH  = 100;
 
