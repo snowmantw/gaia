@@ -255,15 +255,20 @@
   top: -8.1rem;
 }
 
-@media (orientation:landscape) {
+
+#lockscreen-area-slide #lockscreen-slide-track .lockscreen-slide-center {
+  width: 22rem;
+}
+
+@media (min-width:768px) and (orientation: landscape) {
   #lockscreen-area-slide #lockscreen-slide-track .lockscreen-slide-center {
-    width: 35rem;
+    width: calc(50% - 27.5rem);
   }
 }
 
-@media (orientation:portrait) {
+@media (min-width:768px) and (orientation: portrait) {
   #lockscreen-area-slide #lockscreen-slide-track .lockscreen-slide-center {
-    width: 22rem;
+    width: calc(50% - 3.5rem);
   }
 }
 
