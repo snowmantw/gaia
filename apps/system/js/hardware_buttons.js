@@ -122,7 +122,10 @@
         }
         return;
       case 'volume-up-button-press':
+        LockScreen.unlock();
+        return;
       case 'volume-down-button-press':
+        LockScreen.lock();
         setState(volumeState, type);
         return;
       case 'home-button-release':
