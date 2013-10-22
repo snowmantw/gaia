@@ -70,7 +70,8 @@ var UtilityTray = {
 
 
       case 'screenchange':
-        if (this.shown && !evt.detail.screenEnabled)
+        this.screenchanged = true;
+        if (!evt.detail.screenEnabled)
           this.hide(true);
 
         break;
@@ -140,12 +141,19 @@ var UtilityTray = {
   onTouchEnd: function ut_onTouchEnd(touch) {
     var significant = (Math.abs(this.lastDelta) > (this.screenHeight / 5));
     var shouldOpen = significant ? !this.shown : this.shown;
+    shouldOpen = shouldOpen && !(true === this.screenchanged);
 
     shouldOpen ? this.show() : this.hide();
 
     this.startY = undefined;
     this.lastDelta = undefined;
     this.screenHeight = undefined;
+
+    // This is because the change will happen before the tray
+    // touch the end, so the normal detection will fail.
+    // We must keep the screenchange state to this moment,
+    // and use it to decided if the tray should display or not.
+    this.screenchanged = false;
   },
 
   hide: function ut_hide(instant) {
@@ -158,10 +166,12 @@ var UtilityTray = {
     // If the transition has not started yet there won't be any transitionend
     // event so let's not wait in order to remove the utility-tray class.
     if (instant || style.MozTransform == 'translateY(0px)') {
+      console.log('hide 1');
       this.screen.classList.remove('utility-tray');
     }
 
     if (!alreadyHidden) {
+      console.log('hide 2');
       var evt = document.createEvent('CustomEvent');
       evt.initCustomEvent('utilitytrayhide', true, true, null);
       window.dispatchEvent(evt);
