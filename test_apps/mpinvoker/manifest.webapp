@@ -1,0 +1,71 @@
+{
+  "name": "MediaParserInvoker",
+  "description": "Web app template",
+  "launch_path": "/index.html",
+  "developer": {
+    "name": "The Gaia Team",
+    "url": "https://github.com/mozilla-b2g/gaia"
+  },
+  "connections": {
+    "parserchannel": {
+      "description": "The bidirection channel between media apps and the parser",
+      "rules": {
+        "manifestURLs": ["app://music.gaiamobile.org/manifest.webapp",
+                         "app://video.gaiamobile.org/manifest.webapp",
+                         "app://gallery.gaiamobile.org/manifest.webapp",
+                         "app://mediaparser.gaiamobile.org/manifest.webapp"
+                        ]
+      }
+    }
+  },
+  "locales": {
+    "ar": {
+      "name": "ParserInvoker",
+      "description": "Web app template"
+    },
+    "de": {
+      "name": "ParserInvoker",
+      "description": "Web app template"
+    },
+    "el": {
+      "name": "ParserInvoker",
+      "description": "Web app template"
+    },
+    "en-US": {
+      "name": "ParserInvoker",
+      "description": "Web app template"
+    },
+    "es": {
+      "name": "ParserInvoker",
+      "description": "Web app template"
+    },
+    "fr": {
+      "name": "ParserInvoker",
+      "description": "Web app template"
+    },
+    "it": {
+      "name": "ParserInvoker",
+      "description": "Web app template"
+    },
+    "pt-BR": {
+      "name": "ParserInvoker",
+      "description": "Web app template"
+    },
+    "ru": {
+      "name": "ParserInvoker",
+      "description": "Web app template"
+    },
+    "tr": {
+      "name": "ParserInvoker",
+      "description": "Web app template"
+    },
+    "zh-TW": {
+      "name": "ParserInvoker",
+      "description": "Web app template"
+    }
+  },
+  "default_locale": "en-US",
+  "icons": {
+    "128": "/style/icons/Blank.png"
+  }
+}

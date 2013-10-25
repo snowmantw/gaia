@@ -1,0 +1,72 @@
+{
+  "name": "MediaParser",
+  "description": "The so called 'background' media parser",
+  "launch_path": "/index.html",
+  "developer": {
+    "name": "The Gaia Team",
+    "url": "https://github.com/mozilla-b2g/gaia"
+  },
+  "connections": {
+    "parserchannel": {
+      "handler_path": "parser.html",
+      "description": "The bidirection channel between media apps and the parser",
+      "rules": {
+        "manifestURLs": ["app://music.gaiamobile.org/manifest.webapp",
+                         "app://video.gaiamobile.org/manifest.webapp",
+                         "app://gallery.gaiamobile.org/manifest.webapp",
+                         "app://mpinvoker.gaiamobile.org/manifest.webapp"
+                        ]
+      }
+    }
+  },
+  "locales": {
+    "ar": {
+      "name": "MediaParser",
+      "description": "The so called 'background' media parser"
+    },
+    "de": {
+      "name": "MediaParser",
+      "description": "The so called 'background' media parser"
+    },
+    "el": {
+      "name": "MediaParser",
+      "description": "The so called 'background' media parser"
+    },
+    "en-US": {
+      "name": "MediaParser",
+      "description": "The so called 'background' media parser"
+    },
+    "es": {
+      "name": "MediaParser",
+      "description": "The so called 'background' media parser"
+    },
+    "fr": {
+      "name": "MediaParser",
+      "description": "The so called 'background' media parser"
+    },
+    "it": {
+      "name": "MediaParser",
+      "description": "The so called 'background' media parser"
+    },
+    "pt-BR": {
+      "name": "MediaParser",
+      "description": "The so called 'background' media parser"
+    },
+    "ru": {
+      "name": "MediaParser",
+      "description": "The so called 'background' media parser"
+    },
+    "tr": {
+      "name": "MediaParser",
+      "description": "The so called 'background' media parser"
+    },
+    "zh-TW": {
+      "name": "MediaParser",
+      "description": "The so called 'background' media parser"
+    }
+  },
+  "default_locale": "en-US",
+  "icons": {
+    "128": "/style/icons/Blank.png"
+  }
+}
