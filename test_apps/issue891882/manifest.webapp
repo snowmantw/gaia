@@ -1,0 +1,59 @@
+{
+  "name": "Issue891882",
+  "description": "Web app template",
+  "launch_path": "/index.html",
+  "developer": {
+    "name": "The Gaia Team",
+    "url": "https://github.com/mozilla-b2g/gaia"
+  },
+  "locales": {
+    "ar": {
+      "name": "Issue891882",
+      "description": "Web app template"
+    },
+    "de": {
+      "name": "Issue891882",
+      "description": "Web app template"
+    },
+    "el": {
+      "name": "Issue891882",
+      "description": "Web app template"
+    },
+    "en-US": {
+      "name": "Issue891882",
+      "description": "Web app template"
+    },
+    "es": {
+      "name": "Issue891882",
+      "description": "Web app template"
+    },
+    "fr": {
+      "name": "Issue891882",
+      "description": "Web app template"
+    },
+    "it": {
+      "name": "Issue891882",
+      "description": "Web app template"
+    },
+    "pt-BR": {
+      "name": "Issue891882",
+      "description": "Web app template"
+    },
+    "ru": {
+      "name": "Issue891882",
+      "description": "Web app template"
+    },
+    "tr": {
+      "name": "Issue891882",
+      "description": "Web app template"
+    },
+    "zh-TW": {
+      "name": "Issue891882",
+      "description": "Web app template"
+    }
+  },
+  "default_locale": "en-US",
+  "icons": {
+    "128": "/style/icons/Blank.png"
+  }
+}

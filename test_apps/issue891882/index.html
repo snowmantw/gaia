@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <title>Template</title>
+
+    <style>
+      html, body {
+        width: 100%;
+        height: 100%;
+        background-color: pink;
+        overflow: hidden;
+      }
+    </style>
+
+    <script>
+    </script>
+  </head>
+
+  <body>
+
+    <p id="panel">Touch me</p>
+    <ul id="console" style="height:20rem; overflow-y: auto">
+    </ul>
+
+  </body>
+
+  <script type="application/javascript">
+    var handler = {
+      handleEvent: (evt) => {
+        switch (evt.type) {
+          case 'touchstart':
+            var msg = document.createElement('li');
+            msg.textContent = 'start touch';
+            document.querySelector('#console').appendChild(msg);
+            break;
+
+          case 'touchmove':
+            var msg = document.createElement('li');
+            msg.textContent = 'moving...';
+            document.querySelector('#console').appendChild(msg);
+            break;
+
+          case 'touchend':
+            var msg = document.createElement('li');
+            msg.textContent = 'stop touch';
+            document.querySelector('#console').appendChild(msg);
+            break;
+        }
+      }
+    };
+    var init = () => {
+      var p = document.querySelector('#panel');
+      p.addEventListener('touchstart', handler);
+      p.addEventListener('touchmove', handler);
+      p.addEventListener('touchend', handler);
+    };
+
+    init();
+  </script>
+
+</html>
