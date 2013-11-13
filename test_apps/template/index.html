@@ -20,6 +20,18 @@
           transform 0.5s ease,
           opacity 0.5s ease,
           visibility 0.5s ease;
+        min-width: 200px;
+        min-height: 200px;
+        background-color: red;
+        padding: 1rem 1rem 0 1rem;
+      }
+
+      #test .fragment {
+        min-width: 15px;
+        min-height: 15px;
+        display: inline-block;
+        background-color: green;
+        margin: 1px 1px 1px 1px;
       }
 
       #test.activated {
@@ -41,44 +53,188 @@
   </head>
 
   <body>
-    <p id="from"></p>
-    <p id="to"></p>
+    <p id="from">#From</p>
+    <p id="to">#To</p>
     <p id="trigger">Trigger me</p>
-    <p id="reduce-text">Reduce Text</p>
+    <p id="reduce-text">Reduce DOM</p>
     <div id="test">
-      <p>
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam viverra lectus in commodo tristique. Pellentesque venenatis, lacus at mattis cursus, nisl metus tempus eros, mattis aliquam tellus tortor at risus. Suspendisse mollis erat ut lectus tempus, quis tristique orci facilisis. Donec vitae pellentesque arcu, sagittis dictum turpis. Donec gravida turpis nibh, ut luctus nibh posuere et. Sed cursus lectus ipsum, sed tincidunt lectus tempor eu. Curabitur posuere erat eu lectus ornare venenatis. Donec sapien mi, consequat id blandit ut, ultricies eget sapien. Nullam feugiat tortor vitae congue venenatis. Fusce sollicitudin malesuada dictum. Duis tempor sed justo ac volutpat. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla mollis congue quam vitae vulputate.
-
-Etiam hendrerit tincidunt suscipit. Quisque sed odio quis lacus accumsan luctus. Pellentesque lectus nisi, mattis et porta quis, ultrices tempus ligula. Mauris nisi quam, blandit congue eros eu, dapibus fringilla neque. In faucibus varius tortor. Etiam mattis, dolor id molestie fermentum, metus leo facilisis justo, nec tincidunt mauris lorem nec neque. Donec placerat, neque nec condimentum consectetur, dui justo luctus sapien, ut faucibus risus diam sollicitudin justo.
-
-Etiam consequat massa id dui porta vehicula. Cras ornare nisi dolor, et convallis ligula pharetra et. Duis quis ipsum at metus tincidunt auctor ac non tortor. Nunc tortor augue, cursus sed leo et, convallis egestas tellus. Morbi adipiscing interdum turpis, a scelerisque augue rhoncus et. Sed vitae lectus quis augue vulputate commodo et in augue. Mauris risus turpis, porttitor nec eros a, sollicitudin mollis dolor.
-
-Donec vitae mi vel mi tincidunt aliquet. Duis ac facilisis turpis. Fusce blandit aliquet odio. In quis gravida est, a euismod leo. Vivamus id tortor elementum felis fermentum lobortis ac sagittis diam. Duis aliquam elit ut dapibus posuere. Vivamus sagittis orci eget felis pretium accumsan.
-
-Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Fusce eleifend condimentum velit, quis tempor justo pellentesque quis. Proin nec malesuada diam, tincidunt cursus erat. Suspendisse potenti. Vestibulum fringilla lacus id bibendum pretium. Donec dapibus diam ultrices leo feugiat pulvinar. Morbi erat dolor, auctor eget ante ut, tempor tempor mauris. Sed interdum tristique nulla, sed euismod quam fermentum in. Nullam iaculis augue id augue mollis cursus. Phasellus mollis urna massa, vel porta massa euismod nec. Duis massa nisi, interdum at nulla non, egestas tempus mi.
-      </p>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
+      <div class="fragment"></div>
     </div>
   </body>
 
     <script>
+
+      var tsEnd = () =>
+      {
+        document.querySelector('#to').textContent = Date.now()
+      }
+
       document.querySelector('#trigger')
         .addEventListener('mousedown', function()
         {
-          document.querySelector('#trigger').textContent = "!!Triggered ";
-          document.querySelector('#from').textContent = Date.now()
-          document.querySelector('#test')
-            .classList.add('activated');
+          if (true !== window.TRIGGERED)
+          {
+            window.TRIGGERED = true;
+            document.querySelector('#trigger').textContent = "Restore me";
+            document.querySelector('#from').textContent = Date.now()
+            document.querySelector('#test').addEventListener('transitionend', tsEnd);
+            document.querySelector('#test')
+              .classList.add('activated');
+          }
+          else
+          {
+            window.TRIGGERED = false;
+            document.querySelector('#trigger').textContent = "Trigger me";
+            document.querySelector('#from').textContent = "#From"
+            document.querySelector('#to').textContent = "#To"
+            document.querySelector('#test')
+              .classList.remove('activated');
+            document.querySelector('#test').removeEventListener('transitionend', tsEnd);
+          }
         });
-
-        document.querySelector('#test').addEventListener('transitionend', function()
-        {
-          document.querySelector('#to').textContent = Date.now()
-        })
 
       document.querySelector('#reduce-text')
         .addEventListener('mousedown', function()
         {
-          document.querySelector('#test p').textContent = "few text...";
+          if (true !== window.REDUCE)
+          {
+            document.querySelector('#reduce-text').textContent = "Populate DOM"
+            window.REDUCE = true;
+            document.querySelector('#test').innerHTML = "";
+          }
+          else
+          {
+            document.querySelector('#reduce-text').textContent = "Reduce DOM"
+            window.REDUCE = false;
+            document.querySelector('#test').innerHTML = 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' + 
+'<div class="fragment"></div>' 
+          }
         });
     </script>
 </html>
