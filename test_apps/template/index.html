@@ -31,14 +31,21 @@
       #trigger {
         font-size: 24pt;
       }
+
+      #reduce-text{
+        font-size: 18pt;
+      }
     </style>
 
 
   </head>
 
   <body>
+    <p id="from"></p>
+    <p id="to"></p>
+    <p id="trigger">Trigger me</p>
+    <p id="reduce-text">Reduce Text</p>
     <div id="test">
-      <p id="trigger">Trigger me</p>
       <p>
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam viverra lectus in commodo tristique. Pellentesque venenatis, lacus at mattis cursus, nisl metus tempus eros, mattis aliquam tellus tortor at risus. Suspendisse mollis erat ut lectus tempus, quis tristique orci facilisis. Donec vitae pellentesque arcu, sagittis dictum turpis. Donec gravida turpis nibh, ut luctus nibh posuere et. Sed cursus lectus ipsum, sed tincidunt lectus tempor eu. Curabitur posuere erat eu lectus ornare venenatis. Donec sapien mi, consequat id blandit ut, ultricies eget sapien. Nullam feugiat tortor vitae congue venenatis. Fusce sollicitudin malesuada dictum. Duis tempor sed justo ac volutpat. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla mollis congue quam vitae vulputate.
 
@@ -57,9 +64,21 @@ Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia
       document.querySelector('#trigger')
         .addEventListener('mousedown', function()
         {
-          document.querySelector('#trigger').textContent = "!!Triggered: "+(Date.now())
+          document.querySelector('#trigger').textContent = "!!Triggered ";
+          document.querySelector('#from').textContent = Date.now()
           document.querySelector('#test')
             .classList.add('activated');
+        });
+
+        document.querySelector('#test').addEventListener('transitionend', function()
+        {
+          document.querySelector('#to').textContent = Date.now()
+        })
+
+      document.querySelector('#reduce-text')
+        .addEventListener('mousedown', function()
+        {
+          document.querySelector('#test p').textContent = "few text...";
         });
     </script>
 </html>
