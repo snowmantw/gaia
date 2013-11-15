@@ -207,7 +207,7 @@ var StatusBar = {
     // order to correctly set the visibility of the statusbar clock depending
     // on the active lockscreen panel
     window.addEventListener('lock', this);
-    window.addEventListener('unlock', this);
+    window.addEventListener('will-unlock', this);
     window.addEventListener('lockpanelchange', this);
 
     this.systemDownloadsCount = 0;
@@ -225,7 +225,7 @@ var StatusBar = {
         this.toggleTimeLabel(!LockScreen.locked);
         break;
       case 'attentionscreenshow':
-      case 'unlock':
+      case 'will-unlock':
         // Display the clock in the statusbar when screen is unlocked
         this.toggleTimeLabel(true);
         break;
