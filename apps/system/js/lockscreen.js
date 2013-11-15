@@ -667,6 +667,10 @@ var LockScreen = {
     this.canvas.width = this._canvasDetails.width;
     this.canvas.height = this._canvasDetails.height;
 
+    // Shrink the canvas back to keep the density.
+    this.canvas.style.width = window.innerWidth + 'px';
+    this.canvas.style.height = 80 + 'px';
+
     this._canvasDetails.center.x =
       this.canvas.offsetLeft + this.canvas.width >> 1;
     this._canvasDetails.center.y =
@@ -1118,10 +1122,7 @@ var LockScreen = {
    * @this {LockScreen}
    */
   _dpx: function ls_dpx(px) {
-    // XXX: In theory, pixels should be mapped with pixel ratio when it's not 1,
-    // but it's actually no different. Moreover, if the radius and others be
-    // 1.5 larger, it would oversize at 1.5X device.
-    return px;
+    return px * window.devicePixelRatio;
   },
 
   handleIconClick: function ls_handleIconClick(target) {
