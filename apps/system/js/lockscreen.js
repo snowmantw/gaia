@@ -817,12 +817,32 @@ var LockScreen = {
       }
     }).bind(this);
 
-    if (currentFrame)
+    if (currentFrame) {
       currentFrame.addNextPaintListener(nextPaint);
+console.log('');
+console.log('');
+console.log('');
+console.log('');
+console.log('---- NOT call by repaintTimeout');
+console.log('');
+console.log('');
+console.log('');
+console.log('');
+    }
 
     repaintTimeout = setTimeout(function ensureUnlock() {
+
+console.log('');
+console.log('');
+console.log('');
+console.log('');
+console.log('---- call by repaintTimeout');
+console.log('');
+console.log('');
+console.log('');
+console.log('');
       nextPaint();
-    }, 200);
+    }, 5000);
 
     this.mainScreen.focus();
     this.dispatchEvent('will-unlock');
