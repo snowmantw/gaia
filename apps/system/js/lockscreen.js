@@ -456,15 +456,15 @@ var LockScreen = {
         window.addEventListener('touchmove', this);
 
         this._touch.touched = true;
-        this._touch.initX = evt.touches[0].pageX;
-        this._touch.initY = evt.touches[0].pageY;
+        this._touch.initX = this._dpx(evt.touches[0].pageX);
+        this._touch.initY = this._dpx(evt.touches[0].pageY);
         overlay.classList.add('touched');
         break;
 
       case 'touchmove':
         this.handleMove(
-          evt.touches[0].pageX,
-          evt.touches[0].pageY
+          this._dpx(evt.touches[0].pageX),
+          this._dpx(evt.touches[0].pageY)
         );
         if (this._sliding) {
           this._onSliding(evt);
@@ -476,8 +476,8 @@ var LockScreen = {
         window.removeEventListener('touchend', this);
 
         this.handleMove(
-          evt.changedTouches[0].pageX,
-          evt.changedTouches[0].pageY
+          this._dpx(evt.touches[0].pageX),
+          this._dpx(evt.touches[0].pageY)
         );
 
         if (this._sliding) {
@@ -574,7 +574,6 @@ var LockScreen = {
     var trackLength = this.rightIcon.offsetLeft -
                       this.leftIcon.offsetLeft +
                       this.rightIcon.clientWidth;
-
     // Because the canvas would draw from the center to one point
     // on the circle, it would add dimeter long distance for one side.
     var maxWidth = (trackLength -
@@ -603,8 +602,8 @@ var LockScreen = {
       this._canvasDetails.delayInitialized = true;
     }
 
-    var tx = evt.touches[0].pageX;
-    var ty = evt.touches[0].pageY;
+    var tx = this._dpx(evt.touches[0].pageX);
+    var ty = this._dpx(evt.touches[0].pageY);
 
     var canvasCenterX = this.canvas.clientWidth >> 1;
 
@@ -671,8 +670,6 @@ var LockScreen = {
     this.canvas.style.width = window.innerWidth + 'px';
     this.canvas.style.height = 80 + 'px';
 
-    // Center X, Y no need mapping: position is still correct.
-    // So we use the original width and height to measure it.
     this._canvasDetails.center.x =
       this.canvas.offsetLeft + this.canvas.width >> 1;
     this._canvasDetails.center.y =
@@ -710,7 +707,7 @@ var LockScreen = {
    * @this {LockScreen}
    */
   _onSliding: function ls_onSliding(evt) {
-    var tx = evt.touches[0].pageX;
+    var tx = this._dpx(evt.touches[0].pageX);
     var mtx = this._mapCoord(tx, 0)[0];
     this._clearCanvas();
 
