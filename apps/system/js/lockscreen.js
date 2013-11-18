@@ -671,6 +671,8 @@ var LockScreen = {
     this.canvas.style.width = window.innerWidth + 'px';
     this.canvas.style.height = 80 + 'px';
 
+    // Center X, Y no need mapping: position is still correct.
+    // So we use the original width and height to measure it.
     this._canvasDetails.center.x =
       this.canvas.offsetLeft + this.canvas.width >> 1;
     this._canvasDetails.center.y =
