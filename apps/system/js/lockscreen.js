@@ -592,6 +592,10 @@ var LockScreen = {
     var trackLength = this.rightIcon.offsetLeft -
                       this.leftIcon.offsetLeft +
                       this.rightIcon.clientWidth;
+
+    // Offset and clientWidth would be window size.
+    trackLength = this._dpx(trackLength);
+
     // Because the canvas would draw from the center to one point
     // on the circle, it would add dimeter long distance for one side.
     var maxWidth = (trackLength -
@@ -604,15 +608,7 @@ var LockScreen = {
     // the offset would be zero.
     if (true !== this._canvasDetails.delayInitialized) {
 
-      this._canvasDetails.handle.maxWidth = this._dpx(maxWidth);
-      this._canvasDetails.handle.radius =
-        this._dpx(this._canvasDetails.handle.radius);
-
-      this._canvasDetails.handle.lineWidth =
-        this._dpx(this._canvasDetails.handle.lineWidth);
-
-      this._canvasDetails.handle.autoExpand.sentinelOffset =
-        this._dpx(this._canvasDetails.handle.autoExpand.sentinelOffset);
+      this._canvasDetails.handle.maxWidth = maxWidth;
 
       this._canvasDetails.handle.autoExpand.sentinelWidth =
         maxWidth - this._canvasDetails.handle.autoExpand.sentinelOffset;
@@ -692,6 +688,15 @@ var LockScreen = {
       this.canvas.offsetLeft + this.canvas.width >> 1;
     this._canvasDetails.center.y =
       this.canvas.offsetHeight + this.canvas.height >> 1;
+
+    this._canvasDetails.handle.radius =
+      this._dpx(this._canvasDetails.handle.radius);
+
+    this._canvasDetails.handle.lineWidth =
+      this._dpx(this._canvasDetails.handle.lineWidth);
+
+    this._canvasDetails.handle.autoExpand.sentinelOffset =
+      this._dpx(this._canvasDetails.handle.autoExpand.sentinelOffset);
 
     this.canvas.getContext('2d').save();
 
@@ -779,10 +784,6 @@ var LockScreen = {
       accFactor += interval;
     if (inverse && accFactor - interval > accFactorOriginal)
       accFactor -= interval;
-    if (!inverse && accFactor + interval < accFactorMax)
-      console.log('accelerating');
-    if (inverse && accFactor - interval > accFactorOriginal)
-      console.log('slowing');
     this._canvasDetails.handle.autoExpand.accFactor = accFactor;
     return tx * adjustedAccFactor;
   },
