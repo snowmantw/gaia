@@ -712,11 +712,24 @@ var LockScreen = {
     var mtx = this._mapCoord(tx, 0)[0];
     this._clearCanvas();
 
+/*
     var expandSentinelR = this._canvasDetails.center.x +
       this._canvasDetails.handle.autoExpand.sentinelWidth;
 
     var expandSentinelL = this._canvasDetails.center.x -
       this._canvasDetails.handle.autoExpand.sentinelWidth;
+
+    var center = this._canvasDetails.center;
+    var radius = this._canvasDetails.handle.radius;
+    var ctx = this.canvas.getContext('2d');
+    ctx.strokeStyle = 'cyan';
+    ctx.beginPath();
+    ctx.moveTo(expandSentinelR, center.y + radius);
+    ctx.lineTo(expandSentinelR, center.y - radius);
+    ctx.moveTo(expandSentinelL, center.y + radius);
+    ctx.lineTo(expandSentinelL, center.y - radius);
+    ctx.stroke();
+    ctx.closePath();
 
     if (tx > expandSentinelR || tx < expandSentinelL) {
       mtx = this._accelerateSlide(tx, tx < expandSentinelL);
@@ -724,6 +737,7 @@ var LockScreen = {
       this._canvasDetails.handle.autoExpand.accFactor =
         this._canvasDetails.handle.autoExpand.accFactorOriginal;
     }
+*/
 
     // Slide must overlay on arrows.
     this._drawArrowsTo(mtx);
@@ -1035,6 +1049,19 @@ var LockScreen = {
     // make sure that you use fill() before stroke().
     // Otherwise, the fill will overlap half of the stroke.
     ctx.fill();
+    ctx.stroke();
+    ctx.closePath();
+
+    ctx.strokeStyle = 'red';
+    ctx.beginPath();
+    ctx.moveTo(center.x, center.y);
+    ctx.lineTo(center.x, center.y - radius);
+    ctx.stroke();
+    ctx.closePath();
+
+    ctx.beginPath();
+    ctx.moveTo(offset, center.y + radius);
+    ctx.lineTo(offset, center.y - radius);
     ctx.stroke();
     ctx.closePath();
   },
