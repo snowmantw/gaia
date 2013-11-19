@@ -445,7 +445,17 @@ var LockScreen = {
           touched: false,
           leftTarget: leftTarget,
           rightTarget: rightTarget,
-          overlayWidth: this.overlay.offsetWidth
+          overlayWidth: this.overlay.offsetWidth,
+          initX: -1,
+          initY: -1,
+          pageX: -1,
+          pageY: -1,
+          tx: -1,
+          ty: -1,
+          prevX: -1,
+          prevY: -1,
+          deltaX: 0,  // Diff from prevX and current X
+          deltaY: 0,
         };
 
         if (evt.target === this.area) {
@@ -476,7 +486,6 @@ var LockScreen = {
         window.removeEventListener('touchend', this);
 
         this.handleMove(
-          // DEBUG: TODO: touches[0] is undefined....
           this._dpx(evt.changedTouches[0].pageX),
           this._dpx(evt.changedTouches[0].pageY)
         );
@@ -561,6 +570,14 @@ var LockScreen = {
     touch.tx = pageX - touch.initX;
     touch.pageX = pageX;
     touch.pageY = pageY;
+
+    if (-1 !== touch.pageX) {
+      touch.deltaX = pageX - touch.prevX;
+      touch.deltaY = pageY - touch.prevY;
+    }
+
+    touch.prevX = pageX;
+    touch.prevY = pageY;
   },
 
   /**
@@ -710,9 +727,9 @@ var LockScreen = {
   _onSliding: function ls_onSliding(evt) {
     var tx = this._dpx(evt.touches[0].pageX);
     var mtx = this._mapCoord(tx, 0)[0];
+    var isLeft = tx - this._canvasDetails.center.x < 0;
     this._clearCanvas();
 
-/*
     var expandSentinelR = this._canvasDetails.center.x +
       this._canvasDetails.handle.autoExpand.sentinelWidth;
 
@@ -722,22 +739,19 @@ var LockScreen = {
     var center = this._canvasDetails.center;
     var radius = this._canvasDetails.handle.radius;
     var ctx = this.canvas.getContext('2d');
-    ctx.strokeStyle = 'cyan';
-    ctx.beginPath();
-    ctx.moveTo(expandSentinelR, center.y + radius);
-    ctx.lineTo(expandSentinelR, center.y - radius);
-    ctx.moveTo(expandSentinelL, center.y + radius);
-    ctx.lineTo(expandSentinelL, center.y - radius);
-    ctx.stroke();
-    ctx.closePath();
 
     if (tx > expandSentinelR || tx < expandSentinelL) {
-      mtx = this._accelerateSlide(tx, tx < expandSentinelL);
+        var slow = false;
+        if (isLeft) {
+          slow = this._touch.deltaX > 0;
+        } else {
+          slow = this._touch.deltaX < 0;
+        }
+        mtx = this._accelerateSlide(tx, tx < expandSentinelL, slow);
     } else {
       this._canvasDetails.handle.autoExpand.accFactor =
         this._canvasDetails.handle.autoExpand.accFactorOriginal;
     }
-*/
 
     // Slide must overlay on arrows.
     this._drawArrowsTo(mtx);
@@ -749,16 +763,25 @@ var LockScreen = {
    *
    * @param {number} |tx|
    * @param {boolean} |isLeft|
+   * @param {boolean} |inverse| (Optional) true if you want to slow rather
+   *                            than accelerate it.
    * @return {number}
    * @this {LockScreen}
    */
-  _accelerateSlide: function ls_accelerateSlide(tx, isLeft) {
+  _accelerateSlide: function ls_accelerateSlide(tx, isLeft, inverse) {
     var accFactor = this._canvasDetails.handle.autoExpand.accFactor;
     var accFactorMax = this._canvasDetails.handle.autoExpand.accFactorMax;
+    var accFactorOriginal = this._canvasDetails.handle.autoExpand.accFactorOriginal;
     var interval = this._canvasDetails.handle.autoExpand.accFactorInterval;
     var adjustedAccFactor = isLeft ? 1 / accFactor : accFactor;
-    if (accFactor + interval < accFactorMax)
+    if (!inverse && accFactor + interval < accFactorMax)
       accFactor += interval;
+    if (inverse && accFactor - interval > accFactorOriginal)
+      accFactor -= interval;
+    if (!inverse && accFactor + interval < accFactorMax)
+      console.log('accelerating');
+    if (inverse && accFactor - interval > accFactorOriginal)
+      console.log('slowing');
     this._canvasDetails.handle.autoExpand.accFactor = accFactor;
     return tx * adjustedAccFactor;
   },
@@ -781,8 +804,8 @@ var LockScreen = {
    * @this {LockScreen}
    */
   _mapCoord: function ls_mapCoord(x, y) {
-    var cw = this.canvas.width;
-    var ch = this.canvas.height;
+    var cw = this.canvas.clientWidth;
+    var ch = this.canvas.clientHeight;
 
     return [cw * x / window.innerWidth,
             ch * y / window.innerHeight];
@@ -1049,19 +1072,6 @@ var LockScreen = {
     // make sure that you use fill() before stroke().
     // Otherwise, the fill will overlap half of the stroke.
     ctx.fill();
-    ctx.stroke();
-    ctx.closePath();
-
-    ctx.strokeStyle = 'red';
-    ctx.beginPath();
-    ctx.moveTo(center.x, center.y);
-    ctx.lineTo(center.x, center.y - radius);
-    ctx.stroke();
-    ctx.closePath();
-
-    ctx.beginPath();
-    ctx.moveTo(offset, center.y + radius);
-    ctx.lineTo(offset, center.y - radius);
     ctx.stroke();
     ctx.closePath();
   },
