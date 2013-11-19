@@ -476,6 +476,7 @@ var LockScreen = {
         window.removeEventListener('touchend', this);
 
         this.handleMove(
+          // DEBUG: TODO: touches[0] is undefined....
           this._dpx(evt.touches[0].pageX),
           this._dpx(evt.touches[0].pageY)
         );
