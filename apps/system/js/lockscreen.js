@@ -455,7 +455,7 @@ var LockScreen = {
           prevX: -1,
           prevY: -1,
           deltaX: 0,  // Diff from prevX and current X
-          deltaY: 0,
+          deltaY: 0
         };
 
         if (evt.target === this.area) {
@@ -771,7 +771,8 @@ var LockScreen = {
   _accelerateSlide: function ls_accelerateSlide(tx, isLeft, inverse) {
     var accFactor = this._canvasDetails.handle.autoExpand.accFactor;
     var accFactorMax = this._canvasDetails.handle.autoExpand.accFactorMax;
-    var accFactorOriginal = this._canvasDetails.handle.autoExpand.accFactorOriginal;
+    var accFactorOriginal =
+      this._canvasDetails.handle.autoExpand.accFactorOriginal;
     var interval = this._canvasDetails.handle.autoExpand.accFactorInterval;
     var adjustedAccFactor = isLeft ? 1 / accFactor : accFactor;
     if (!inverse && accFactor + interval < accFactorMax)
