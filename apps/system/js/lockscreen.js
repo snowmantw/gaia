@@ -110,16 +110,6 @@ var LockScreen = {
   _slideReachEnd: false,
 
   /*
-  * Detect if sliding crossed the middle line.
-  */
-  _slidingToward: '',
-
-  /*
-  * How long did the user slide.
-  */
-  _slideCount: 0,
-
-  /*
   * Current passcode entered by the user
   */
   passCodeEntered: '',
@@ -719,7 +709,6 @@ var LockScreen = {
   _finalizeCanvas: function ls_finalizeCanvas() {
     this._canvasDetails.slidingColorful = false;
     this._canvasDetails.slidingColorGradientEnd = false,
-    //this.canvas.getContext('2d').restore();
     this._clearCanvas();
   },
 
@@ -896,31 +885,7 @@ var LockScreen = {
   },
 
   /**
-   * Drag the slide to the specific position.
-   * Need this because we need to show the arrows.
-   *
-   * @this {LockScreen}
-   */
-  _dragSlideTo: function ls_dragSlideTo(tx) {
-    var center = this._canvasDetails.center;
-    var offset = tx - center.x;
-    var isLeft = offset < 0;
-
-    if (this._canvasDetails.handle.maxWidth < Math.abs(offset)) {
-      this._slideReachEnd = true;
-      return;
-    }
-    this._slideReachEnd = false;
-
-    if (isLeft) {
-      this.slideLeft.style.transform = 'translateX(' + offset + 'px)';
-    } else {
-      this.slideRight.style.transform = 'translateX(' + offset + 'px)';
-    }
-  },
-  /**
    * Draw the two arrows on the slide.
-   * TODO
    *
    * @param {number} |tx| The absolute horizontal position of the target.
    * @this {LockScreen}
