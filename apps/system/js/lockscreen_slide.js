@@ -6,12 +6,18 @@
   'use strict';
 
   var LockScreenSlide = {
+    canvas: null,
     arrows: {
       left: null, right: null,
       // Left and right drawing origin.
       ldraw: {x: null, y: null},
       rdraw: {x: null, y: null}
     },
+
+   slides: {
+      left: null,
+      right: null
+   },
 
     width: 0, // We need dynamic length here.
     height: 80,
@@ -37,7 +43,7 @@
       touchedColorStop: '178, 229, 239'
     },
 
-    state: {
+    states: {
       // Some elements can only be initialized after initialization...
       delayInitialized: false,
       sliding: false,
@@ -54,6 +60,11 @@
    */
   LockScreenSlide._initializeCanvas =
     (function lss_initializeCanvas() {
+
+      this.canvas = document.getElementById('lockscreen-canvas');
+      this.slides.left = document.getElementById('lockscreen-slide-left');
+      this.slides.right = document.getElementById('lockscreen-slide-right');
+
       var center = this.center;
       this.arrows.left = new Image();
       this.arrows.right = new Image();
@@ -122,14 +133,14 @@
     }).bind(LockScreenSlide);
 
   /**
-   * Finalize the canvas: restore its default state.
+   * Finalize the canvas: restore its default states.
    *
    * @this {LockScreenSlide}
    */
   LockScreenSlide._finalizeCanvas =
     (function lss_finalizeCanvas() {
-      this.state.slidingColorful = false;
-      this.state.slidingColorGradientEnd = false,
+      this.states.slidingColorful = false;
+      this.states.slidingColorGradientEnd = false,
       this._clearCanvas();
     }).bind(LockScreenSlide);
 
@@ -303,14 +314,14 @@
     }).bind(LockScreenSlide);
 
   /**
-   * Draw the handle with its initial state (a transparent circle).
+   * Draw the handle with its initial states (a transparent circle).
    *
    * @this {LockScreenSlide}
    */
   LockScreenSlilde._resetHandle =
     (function lss_resetHandle() {
-      this.state.slidingColorful = false;
-      this.state.slidingColorGradientEnd = false;
+      this.states.slidingColorful = false;
+      this.states.slidingColorGradientEnd = false;
       var canvas = this.canvas;
       var centerx = this.center.x;
       this._drawSlideTo(centerx);
@@ -332,10 +343,10 @@
       var isLeft = offset < 0;
 
       if (this.handle.maxWidth < Math.abs(offset)) {
-        this.state.slideReachEnd = true;
+        this.states.slideReachEnd = true;
         return;
       }
-      this.state.slideReachEnd = false;
+      this.states.slideReachEnd = false;
 
       // The Y of arrows: need to put it from center to sink half of the arrow.
       if (isLeft) {
@@ -408,14 +419,14 @@
       const GRADIENT_LENGTH = 50;
 
       // If user move over 15px, fill the slide.
-      if (urw > 15 && true !== this.state.slidingColorful) {
+      if (urw > 15 && true !== this.states.slidingColorful) {
         // The color should be gradient in this length, from the origin.
         // It would decide how long the color turning to the touched color.
 
         fillAlpha = (urw - 15) / GRADIENT_LENGTH;
         if (fillAlpha > 1.0) {
           fillAlpha = 1.0;
-          this.state.slidingColorGradientEnd = true;
+          this.states.slidingColorGradientEnd = true;
         }
 
         // The border must disappear during the sliding,
@@ -427,11 +438,11 @@
           ',' + borderAlpha + ')';
 
         // It's colorful now.
-        this.state.slidingColorful = true;
+        this.states.slidingColorful = true;
       } else {
 
         // Has pass the stage of gradient color.
-        if (true === this.state.slidingColorGradientEnd) {
+        if (true === this.states.slidingColorGradientEnd) {
           fillAlpha = 1.0;
           var color = this.handle.touchedColor;
         } else if (0 === urw) {  // Draw as the initial circle.
@@ -441,7 +452,7 @@
           fillAlpha = (urw - 15) / GRADIENT_LENGTH;
           if (fillAlpha > 1.0) {
             fillAlpha = 1.0;
-            this.state.slidingColorGradientEnd = true;
+            this.states.slidingColorGradientEnd = true;
           }
           var color = this.handle.touchedColorStop;
         }
@@ -493,7 +504,7 @@
         this._resetHandle();
       }).bind(this);
 
-      if (false === this.state.slideReachEnd) {
+      if (false === this.states.slideReachEnd) {
         this._bounceBack(this._touch.pageX, bounceEnd);
       } else {
         this.handleIconClick(isLeft ?
@@ -550,8 +561,8 @@
       this.slideLeft.style.transform = '';
       this.slideRight.style.transform = '';
 
-      this.state.sliding = false;
-      this.state.slideReachEnd = false;
+      this.states.sliding = false;
+      this.states.slideReachEnd = false;
     }).bind(LockScreenSlide);
 
   /**
@@ -567,7 +578,27 @@
       return px * window.devicePixelRatio;
     }).bind(LockScreenSlide);
 
-  exports.LockScreenSlide = LockScreenSlide;
-  LockScreenSlide._initializeCanvas();
+  /**
+   * Light the camera and unlocking icons when user touch on our LockScreen.
+   *
+   * @this {LockScreenSlide}
+   */
+  _lightIcons =
+    (function lss_lightIcons() {
+      this.rightIcon.classList.remove('dark');
+      this.leftIcon.classList.remove('dark');
+    }).bind(LockScreenSlide);
 
+  /**
+   * Dark the camera and unlocking icons when user leave our LockScreen.
+   *
+   * @this {LockScreenSlide}
+   */
+  _darkIcons =
+    (function lss_darkIcons() {
+      this.rightIcon.classList.add('dark');
+      this.leftIcon.classList.add('dark');
+    }).bind(LockScreenSlide);
+
+  exports.LockScreenSlide = LockScreenSlide;
 })(window);
