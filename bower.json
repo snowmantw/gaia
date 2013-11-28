@@ -1,0 +1,7 @@
+{
+  "devDependencies": {
+    "libgaia-html": "https://github.com/snowmantw/libgaia-html.git#~0.0.1"
+  },
+  "name": "gaia",
+  "version": "1.3"
+}

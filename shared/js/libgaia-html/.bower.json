@@ -1,0 +1,14 @@
+{
+  "name": "libgaia-html",
+  "version": "0.0.1",
+  "homepage": "https://github.com/snowmantw/libgaia-html",
+  "_release": "0.0.1",
+  "_resolution": {
+    "type": "version",
+    "tag": "0.0.1",
+    "commit": "44e3961e0f44f134697df84a16bc9611fd752115"
+  },
+  "_source": "https://github.com/snowmantw/libgaia-html.git",
+  "_target": "~0.0.1",
+  "_originalSource": "https://github.com/snowmantw/libgaia-html.git"
+}
