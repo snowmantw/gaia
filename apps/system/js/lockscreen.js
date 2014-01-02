@@ -184,6 +184,7 @@ var LockScreen = {
    */
   appstates: {
     apps: {},
+    screenshot: false,
     currentAppURL: ''
   },
 
@@ -558,20 +559,27 @@ var LockScreen = {
    */
   _switchToApp: function ls_switchToApp(url) {
     this.appstates.currentAppURL = url;
+    this.appstates.screenshot = false;
   },
 
   _screenshotOn: function ls_screenshowOn() {
     var currentWindow = this.appstates.apps[this.appstates.currentAppURL];
     // Homescreen make it undefined.
-    if (currentWindow)
+    if (currentWindow && !this.appstates.screenshot)
+    {
       currentWindow.setVisible(false, true);
+      this.appstates.screenshot = true;
+    }
   },
 
   _screenshotOff: function ls_screenshowOn() {
     var currentWindow = this.appstates.apps[this.appstates.currentAppURL];
     // Homescreen make it undefined.
     if (currentWindow)
+    {
       currentWindow.setVisible(true);
+      this.appstates.screenshot = false;
+    }
   },
 
   /**
