@@ -180,6 +180,14 @@ var LockScreen = {
   clock: new Clock(),
 
   /**
+   * States of the foreground app.
+   */
+  appstates: {
+    apps: {},
+    currentAppURL: ''
+  },
+
+  /**
    * Some additional information about other global data entries bound on
    * DOM elements:
    *
@@ -218,6 +226,10 @@ var LockScreen = {
 
     this.lockIfEnabled(true);
     this.writeSetting(this.enabled);
+
+    window.addEventListener('appcreated', this);
+    window.addEventListener('appterminated', this);
+    window.addEventListener('appopen', this);
 
     /* Status changes */
     window.addEventListener('volumechange', this);
@@ -350,7 +362,28 @@ var LockScreen = {
   },
 
   handleEvent: function ls_handleEvent(evt) {
+
+      // We can't handle pages without manifestURL.
+      switch (evt.type) {
+        case 'appcreated':
+        case 'appterminated':
+        case 'appopen':
+          if (!evt.detail || !evt.detail.manifestURL)
+            return;
+      }
+
     switch (evt.type) {
+      case 'appcreated':
+        var app = evt.detail;
+        this._registerApp(app);
+        break;
+      case 'appterminated':
+        this._unregisterApp(evt.detail.manifestURL);
+        break;
+      case 'appopen':
+        var config = evt.detail;
+        this._switchToApp(config.manifestURL);
+        break;
       case 'ftuopen':
         this.unlock(true);
         break;
@@ -498,6 +531,50 @@ var LockScreen = {
   },
 
   /**
+   * Register an app.
+   *
+   * @param {AppWindow} |app|
+   * @this {LockScreen}
+   */
+  _registerApp: function ls_registerApp(app) {
+    this.appstates.apps[app.manifestURL] = app;
+  },
+
+  /**
+   * Unregister an app.
+   *
+   * @param {string} |manifestURL| the manifest URL.
+   * @this {ShrinkingUI}
+   */
+  _unregisterApp: function ls_unregisterApp(manifestURL) {
+    delete this.appstates.apps[manifestURL];
+  },
+
+  /**
+   * When new app launched, switch to it.
+   *
+   * @param {string} |url| the manifest URL.
+   * @this {ShrinkingUI}
+   */
+  _switchToApp: function ls_switchToApp(url) {
+    this.appstates.currentAppURL = url;
+  },
+
+  _screenshotOn: function ls_screenshowOn() {
+    var currentWindow = this.appstates.apps[this.appstates.currentAppURL];
+    // Homescreen make it undefined.
+    if (currentWindow)
+      currentWindow.setVisible(false, true);
+  },
+
+  _screenshotOff: function ls_screenshowOn() {
+    var currentWindow = this.appstates.apps[this.appstates.currentAppURL];
+    // Homescreen make it undefined.
+    if (currentWindow)
+      currentWindow.setVisible(true);
+  },
+
+  /**
    * Activate the camera.
    *
    * @this {LockScreen}
@@ -627,6 +704,7 @@ var LockScreen = {
     }
 
     this.overlay.classList.toggle('no-transition', instant);
+    window.requestAnimationFrame(this._screenshotOff.bind(this));
 
     // Actually begin unlock until the foreground app is painted
     var repaintTimeout = 0;
@@ -659,6 +737,7 @@ var LockScreen = {
   },
 
   lock: function ls_lock(instant) {
+    this._screenshotOn();
     var wasAlreadyLocked = this.locked;
     this.locked = true;
 
@@ -787,6 +866,7 @@ var LockScreen = {
    *
    * @param {PanelType} panel Could be 'camera', 'passcode', 'emergency-call' or
    *                          undefined. Undefined means the main panel.
+   * @this {LockScreen}
    */
   switchPanel: function ls_switchPanel(panel) {
     if (this._switchingPanel) {
@@ -898,6 +978,8 @@ var LockScreen = {
    * Note we do a name mapping here: DOM variables named like 'passcodePad'
    * are actually corresponding to the lowercases with hyphen one as
    * 'passcode-pad', then be prefixed with 'lookscreen'.
+   *
+   * @this {LockScreen}
    */
   getAllElements: function ls_getAllElements() {
     // ID of elements to create references
