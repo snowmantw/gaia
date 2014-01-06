@@ -562,7 +562,7 @@ var LockScreen = {
     this.appstates.screenshot = false;
   },
 
-  _screenshotOn: function ls_screenshowOn() {
+  _screenshotOn: function ls_screenshotOn() {
     var currentWindow = this.appstates.apps[this.appstates.currentAppURL];
     // Homescreen make it undefined.
     if (currentWindow && !this.appstates.screenshot)
@@ -572,7 +572,7 @@ var LockScreen = {
     }
   },
 
-  _screenshotOff: function ls_screenshowOn() {
+  _screenshotOff: function ls_screenshotOn() {
     var currentWindow = this.appstates.apps[this.appstates.currentAppURL];
     // Homescreen make it undefined.
     if (currentWindow)
@@ -712,7 +712,23 @@ var LockScreen = {
     }
 
     this.overlay.classList.toggle('no-transition', instant);
-    window.requestAnimationFrame(this._screenshotOff.bind(this));
+    this.overlay.classList.add('unlocked');
+
+    // If we don't unlock instantly here,
+    // these are run in transitioned callback.
+    if (instant) {
+      this.switchPanel();
+      this.overlay.hidden = true;
+    } else {
+      this.unlockDetail = detail;
+    }
+    // DEBUG
+    if (app) {
+      app.tryWaitForFullRepaint((function() {
+        this.dispatchEvent('unlock', detail);
+      }).bind(this));
+    }
+    /*
 
     // Actually begin unlock until the foreground app is painted
     var repaintTimeout = 0;
@@ -720,6 +736,9 @@ var LockScreen = {
       clearTimeout(repaintTimeout);
 
       this.overlay.classList.add('unlocked');
+      window.requestAnimationFrame((function() {
+        this.dispatchEvent('unlock', detail);
+      }).bind(this));
 
       // If we don't unlock instantly here,
       // these are run in transitioned callback.
@@ -727,7 +746,7 @@ var LockScreen = {
         this.switchPanel();
         this.overlay.hidden = true;
 
-        this.dispatchEvent('unlock', detail);
+        //this.dispatchEvent('unlock', detail);
       } else {
         this.unlockDetail = detail;
       }
@@ -742,6 +761,7 @@ var LockScreen = {
     repaintTimeout = setTimeout(function ensureUnlock() {
       nextPaint();
     }, 400);
+    */
   },
 
   lock: function ls_lock(instant) {

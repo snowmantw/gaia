@@ -350,7 +350,9 @@
                 detail.origin === this.displayedApp) {
               return;
             }
-            this._activeApp.setVisible(false);
+            // DEBUG
+            //this._activeApp.setVisible(false);
+            this._activeApp.setVisible(false, true);
           } else {
             var home = HomescreenLauncher.getHomescreen();
             home && home.setVisible(false);

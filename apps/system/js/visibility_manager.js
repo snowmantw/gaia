@@ -1,4 +1,5 @@
 (function(window) {
+  'use strict';
   var DEBUG = false;
   // When an UI layer is overlapping the current app,
   // WindowManager should set the visibility of app iframe to false
