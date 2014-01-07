@@ -14,15 +14,96 @@
         overflow: hidden;
       }
     </style>
+    <link rel="stylesheet" type="text/css" href="style/lockscreen/lockscreen.css">
 
-    <script>
-    </script>
+    <script src="/shared/js/lockscreen_slide.js"></script>
   </head>
 
   <body>
 
-    <p>Implement me</p>
+    <div id="lockscreen" data-panel="main" data-z-index-level="lockscreen">
+      <div id="lockscreen-area"></div>
+      <div id="lockscreen-area-unlock"
+           class="lockscreen-icon-area lockscreen-icon-right dark" role="button"
+           data-l10n-id="unlock-a11y-button" aria-label="Unlock">
+        <div class="lockscreen-icon">
+        </div>
+      </div>
+      <div id="lockscreen-area-camera"
+           class="lockscreen-icon-area lockscreen-icon-left dark" role="button"
+           data-l10n-id="camera-a11y-button" aria-label="Camera">
+        <div class="lockscreen-icon">
+        </div>
+      </div>
+      <div id="lockscreen-area-slide"
+           class="lockscreen-icon-area lockscreen-icon-center">
+        <div id="lockscreen-canvas-wrapper">
+          <canvas id="lockscreen-canvas"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div style="line-height:10rem;text-align:center;cursor:pointer;background-color:wheat;height:10rem;width:10rem" id="relock">Lock Me</div>
 
   </body>
+  <script type="application/javascript">
+  var LockScreen = function() {
+    this.intentionRouter = {};
+    this.intentionRouter.unlockerInitialize =
+    (function _unlockerInitialize() {
+      this._unlockerInitialized = true;
+    }).bind(this);
+    this.intentionRouter.activateRight =
+    (function _activateRight() {
+      this.unlock();
+    }).bind(this);
+    this.intentionRouter.activateLeft =
+    (function _activateLeft() {
+      this._activateCamera();
+    }).bind(this);
+    this.intentionRouter.nearLeft =
+      function _nearLeft(state, statePrev) {};
+    this.intentionRouter.nearRight =
+      function _nearRight(state, statePrev) {};
+
+    this._unlockerInitialized = false;
+    this._unlocker = new LockScreenSlide(this.intentionRouter);
+    this.overlay = document.getElementById('lockscreen');
+  };
+  LockScreen.prototype.unlock = function() {
+    var app = window.AppWindowManager ?
+      AppWindowManager.getActiveApp() : null;
+    var nextPaint = (function() {
+      this.overlay.classList.add('unlocked');
+    }).bind(this);
+    nextPaint();
+  };
+  LockScreen.prototype._activateUnlock = function() {
+    this.unlock();
+  };
+  LockScreen.prototype._activateCamera = function() {
+    // Do nothing.
+  };
+  LockScreen.prototype.lock = function() {
+    this.overlay.focus();
+    this.overlay.classList.remove('unlocked');
+    this.overlay.hidden = false;
+  };
+  window.ScreenLayout = {
+    getCurrentLayout: function() {
+      return 'tiny';
+    }
+  };
+  window.lockscreenInstance = new LockScreen();
+  relock.addEventListener('mousedown', function() {
+    window.lockscreenInstance.lock();
+  });
+  relock.addEventListener('click', function() {
+    window.lockscreenInstance.lock();
+  });
+  relock.addEventListener('touchstart', function() {
+    window.lockscreenInstance.lock();
+  });
+  </script>
 
 </html>
