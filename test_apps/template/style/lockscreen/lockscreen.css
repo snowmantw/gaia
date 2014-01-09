@@ -6,6 +6,8 @@
   height: 100%;
   overflow: hidden;
   background-image: url('/style/lockscreen/images/bg.png');
+  background-repeat: no-repeat;
+  background-size: 100%;
   -moz-user-select: none;
   opacity: 1;
   /* Utilzing a cubic bezier timing function to hide the fact
