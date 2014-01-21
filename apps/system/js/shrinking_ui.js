@@ -110,14 +110,14 @@
           this._switchTo(config.manifestURL);
           break;
         case 'shrinking-start':
-          this.states.commandsQueue.push(1);
+          this.state.commandsQueue.push(1);
           this._setup();
-          if (!this.states.animatingTilt)
+          if (!this.state.animatingTilt)
             this.start();
           break;
         case 'shrinking-stop':
-          this.states.commandsQueue.push(-1);
-          if (!this.states.animatingTiltBack)
+          this.state.commandsQueue.push(-1);
+          if (!this.state.animatingTiltBack)
             this.stop();
           break;
         case 'shrinking-receiving':
@@ -209,9 +209,7 @@
         currentWindow.setVisible(false, true);
         this._setState(true);
         var accState = this._accQueuedState();
-        if (accState > 0) {
-          this._shrinkingTilt(afterTilt);
-        } else if (accState < 0) {
+        if (accState < 0) {
           this.stop();
         }
       }).bind(this);
@@ -253,8 +251,6 @@
         var accState = this._accQueuedState();
         if (accState > 0) {
           this.start();
-        } else if (accState < 0) {
-          this._shrinkingTiltBack(afterTiltBack);
         }
       }).bind(this);
       this.current.tip.remove();
@@ -483,7 +479,7 @@
         this.current.appFrame.removeEventListener('transitionend',
           bounceBackEnd);
         this.current.appFrame.style.transition = 'transform 0.5s ease';
-        this.states.animatingTilt = false;
+        this.state.animatingTilt = false;
         if (cb)
           cb();
       }).bind(this);
@@ -491,7 +487,7 @@
       this.current.appFrame.addEventListener('transitionend', bounceBack);
 
       // After set up, trigger the transition.
-      this.states.animatingTilt = true;
+      this.state.animatingTilt = true;
       this.current.appFrame.style.transformOrigin = '50% 100% 0';
       this.current.appFrame.style.transform = 'rotateX(1.0deg)';
     }).bind(ShrinkingUI);
@@ -513,11 +509,11 @@
       if (!instant) {
         var tsEnd = (function _tsEnd(evt) {
             this.current.appFrame.removeEventListener('transitionend', tsEnd);
-            this.states.animatingTiltBack = false;
+            this.state.animatingTiltBack = false;
             if (cb)
               cb();
         }).bind(this);
-        this.states.animatingTiltBack = true;
+        this.state.animatingTiltBack = true;
         this.current.appFrame.style.transition = 'transform 0.3s ease';
         this.current.appFrame.addEventListener('transitionend', tsEnd);
         this.current.appFrame.style.transform = 'rotateX(0.0deg)';
@@ -651,10 +647,10 @@
    */
   ShrinkingUI._accQueuedState =
     (function su_accQueuedState() {
-      var result = this.states.commandsQueue.reduce(function(prev, curr) {
+      var result = this.state.commandsQueue.reduce(function(prev, curr) {
         return prev + curr;
       });
-      this.states.commandsQueue.length = 0;
+      this.state.commandsQueue.length = 0;
       return result;
     }).bind(ShrinkingUI);
 
