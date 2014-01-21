@@ -22,7 +22,18 @@
   <body>
 
     <p>Implement me</p>
+    <iframe sandbox="allow-same-origin allow-top-navigation" id="frame" src="frame.html">
+    </iframe>
+    World
 
   </body>
+  <script>
+    var f = document.getElementById('frame');
+    f.onload = function() {
+      var k = f.contentWindow.window.document;
+      console.log('<<<<', k.getElementById('h').textContent);
+      DEBUG = k;
+    };
+  </script>
 
 </html>
