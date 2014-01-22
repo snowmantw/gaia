@@ -3,6 +3,185 @@
 
 'use strict';
 
+(function(exports) {
+
+  var LockScreen = function() {
+  };
+  LockScreen.prototype = {
+    helpers: {
+      altCamera: null,
+      camera: null,
+      clock: null,
+      emergencyPad: null,
+      passcodePad: null,
+      unlocker: null,
+      lockscreenConnInfo: null,
+      screenOff: null,
+      panelMediator: null
+    },
+    elements: {
+      area: null,
+      areaUnlock: null,
+      iconContainer: null,
+      mediaContainer: null,
+      accessibilityCamera: null,
+      accessibilityUnlock: null,
+      overlay: null,
+      mainScreen: null
+    },
+    states: {
+      locked: true,
+      ready: false,
+      enabled: true
+    },
+    configs: {
+      listens: [
+        'home',
+        'holdhome',
+        'volumechange',
+        'screenchange',
+        'visibilitychange',
+        'callschanged', // if (navigator.mozTelephony)
+        'touchstart',
+        'click',
+        'ftuopen',
+        'transitionend'
+      ],
+      elementIDs: {
+        area: 'lockscreen-area',
+        areaUnlock: 'lockscreen-area-unlock',
+        iconContainer: 'lockscreen-icon-container',
+        mediaContainer: 'lockscreen-media-container',
+        accessibilityCamera: 'lockscreen-accessibility-camera',
+        accessibilityUnlock: 'lockscreen-accessibility-unlock',
+        overlay: 'lockscreen',
+        mainScreen: 'screen'
+      }
+    }
+  };
+
+  LockScreen.prototype.handleEvent = function(evt) {
+  };
+
+  LockScreen.prototype.initEvents = function() {
+    this.configs.listens.forEach(function(ename) {
+      if ('callschanged' === ename && !navigator.mozTelephony) {
+        return;
+      }
+      window.addEventListener(ename, this);
+    });
+  };
+
+  LockScreen.prototype.suspendEvents = function() {
+    this.configs.listens.forEach(function(ename) {
+      window.removeEventListener(ename, this);
+    });
+  };
+
+  LockScreen.prototype.initHeplers = function() {
+    this.helpers.altCamera = new AltCameraHelper();
+    this.helpers.camera = new CameraHelper();
+    this.helpers.clock = new ClockHelper();
+    this.helpers.emergencyPad = new EmergencyPadHelper();
+    this.helpers.passcodePad = new PasscodePadHelper();
+    this.helpers.unlocker = new UnlockerHelper(LockScreenSlide);
+    this.helpers.lockscreenConnInfo = new LockScreenConnInfoHelper();
+    this.helpers.screenOff = new ScreenOffHelper();
+    this.helpers.panelMediator = new PanelMediator();
+  };
+
+  LockScreen.prototype.initElements = function() {
+    for (var id in this.configs.elementIDs) {
+      this.elements[id] = document.getElementById(id);
+      if (!this.elements[id]) {
+        throw new Error('Can\'t initialize the element:' + id);
+      }
+    }
+  };
+
+  LockScreen.prototype.initObservers = function() {
+  };
+
+  LockScreen.prototype.publish = function() {
+  };
+
+  LockScreen.prototype.lock = function() {
+  };
+
+  LockScreen.prototype.unlock = function() {
+  };
+
+  LockScreen.prototype.locked = function() {
+  };
+
+  exports.DL = LockScreen;
+
+  var AltCameraHelper = function() {};
+  AltCameraHelper.prototype = {
+    elements: {
+      altCamera: null,
+      altCameraButton: null
+    },
+    states: {},
+    configs: {
+      elementsIDs: {
+        altCamera: 'lockscreen-alt-camera',
+        altCameraButton: 'lockscreen-alt-camera-button'
+      },
+      listens: [
+        'click'
+      ]
+    }
+  };
+
+  AltCameraHelper.prototype.handleEvent = function(evt) {
+    if ('click' === evt.type && this.elements.altCameraButton === evt.target)
+      this.launch();
+  };
+
+  AltCameraHelper.prototype.initElements = function() {
+    for (var id in this.configs.elementIDs) {
+      this.elements[id] = document.getElementById(id);
+      if (!this.elements[id]) {
+        throw new Error('Can\'t initialize the element:' + id);
+      }
+    }
+  };
+
+  AltCameraHelper.prototype.initEvents = function() {
+    this.configs.listens.forEach(function(ename) {
+      window.addEventListener(ename, this);
+    });
+  };
+
+  AltCameraHelper.prototype.suspendEvents = function() {
+    this.configs.listens.forEach(function(ename) {
+      window.removeEventListener(ename, this);
+    });
+  };
+
+  AltCameraHelper.prototype.launch = function() {
+    // XXX hardcode URLs
+    // Proper fix should be done in bug 951978 and friends.
+    var cameraAppUrl =
+          window.location.href.replace('system', 'camera'),
+        cameraAppManifestURL =
+          cameraAppUrl.replace(/(\/)*(index.html)*$/, '/manifest.webapp')
+                      .replace(/$/, '#secure');
+    secureWindowFactory.create(cameraAppUrl, cameraAppManifestURL);
+  };
+
+  var CameraHelper = function() {};
+  var ClockHelper = function() {};
+  var EmergencyPadHelper = function() {};
+  var PasscodePadHelper = function() {};
+  var UnlockerHelper = function(strategy) {};
+  var LockScreenConnInfoHelper = function() {};
+  var ScreenOffHelper = function() {};
+  var PanelMediator = function() {};
+
+})(window);
+
 /**
  * LockScreen now use strategy pattern to adapt the unlocker, which would
  * report intentions like unlocking and launching camera to finish the job.
