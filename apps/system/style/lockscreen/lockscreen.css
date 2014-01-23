@@ -4,15 +4,72 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background-color: #000;
   -moz-user-select: none;
   opacity: 1;
   /* Utilzing a cubic bezier timing function to hide the fact
      that we might be slow at the beginning of the transition. */
   transition:
-    transform 0.5s cubic-bezier(0.7, 0.0, 1.0, 1.0),
-    opacity 0.5s cubic-bezier(0.7, 0.0, 1.0, 1.0),
+    transform 2s cubic-bezier(0.7, 0.0, 1.0, 1.0)
 }
+
+#lockscreen-background {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #000;
+  background-repeat: no-repeat;
+  background-size: 100%;
+  -moz-user-select: none;
+  opacity: 1;
+}
+
+#lockscreen.unlocked .lockscreen-background,
+#lockscreen #lockscreen-canvas,
+#lockscreen .lockscreen-icon {
+  transition:
+    opacity 2s cubic-bezier(0.7, 0.0, 1.0, 1.0);
+}
+
+#lockscreen.unlocked .lockscreen-background,
+#lockscreen.unlocked #lockscreen-canvas,
+#lockscreen.unlocked .lockscreen-icon {
+  opacity: 0;
+}
+
+/*for the opacity experiment*/
+#lockscreen span.connstate-line:nth-child(2),
+#lockscreen #lockscreen-conn-states > div:nth-child(1) > span:nth-child(1),
+#lockscreen span.connstate-line:nth-child(3),
+#lockscreen #lockscreen-mute,
+#lockscreen #lockscreen-alt-camera-button,
+#lockscreen #lockscreen-clock-numbers,
+#lockscreen #lockscreen-clock-meridiem,
+#lockscreen #lockscreen-date,
+#lockscreen #notifications-lockscreen-container *,
+#lockscreen #lockscreen-media-container > div:nth-child(1) *,
+#lockscreen .media-playback-controls.big *
+{
+  transition:
+    opacity 2s cubic-bezier(0.7, 0.0, 1.0, 1.0);
+}
+
+#lockscreen.unlocked span.connstate-line:nth-child(2),
+#lockscreen.unlocked #lockscreen-conn-states > div:nth-child(1) > span:nth-child(1),
+#lockscreen.unlocked span.connstate-line:nth-child(3),
+#lockscreen.unlocked #lockscreen-mute,
+#lockscreen.unlocked #lockscreen-alt-camera-button,
+#lockscreen.unlocked #lockscreen-clock-numbers,
+#lockscreen.unlocked #lockscreen-clock-meridiem,
+#lockscreen.unlocked #lockscreen-date,
+#lockscreen.unlocked #notifications-lockscreen-container *,
+#lockscreen.unlocked #lockscreen-media-container > div:nth-child(1) *,
+#lockscreen.unlocked .media-playback-controls.big *
+{
+  opacity: 0;
+}
+
 
 #screen.active-statusbar > #lockscreen {
   top: 4rem;
@@ -21,7 +78,6 @@
 
 #lockscreen.unlocked {
   transform: scale(2);
-  opacity: 0;
   pointer-events: none;
 }
 
@@ -114,6 +170,7 @@
 [data-panel="passcode"] #lockscreen-panel-main,
 [data-panel="passcode"] #lockscreen-panel-passcode,
 [data-panel="emergency-call"] #lockscreen-panel-emergency-call {
+  background-color: rgba(0,0,0,0);
   visibility: inherit;
 }
 
