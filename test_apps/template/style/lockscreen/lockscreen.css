@@ -5,31 +5,16 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  -moz-user-select: none;
-  /* Utilzing a cubic bezier timing function to hide the fact
-     that we might be slow at the beginning of the transition. */
-  transition:
-    transform 1s cubic-bezier(0.7, 0.0, 1.0, 1.0),
-}
-
-#lockscreen-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
   background-image: url('/style/lockscreen/images/bg.png');
   background-repeat: no-repeat;
   background-size: 100%;
+  -moz-user-select: none;
   opacity: 1;
-}
-
-#lockscreen.unlocked #lockscreen-bg,
-#lockscreen #lockscreen-canvas,
-#lockscreen .lockscreen-icon {
+  /* Utilzing a cubic bezier timing function to hide the fact
+     that we might be slow at the beginning of the transition. */
   transition:
-    opacity 1s cubic-bezier(0.7, 0.0, 1.0, 1.0);
+    transform 0.5s cubic-bezier(0.7, 0.0, 1.0, 1.0),
+    opacity 0.5s cubic-bezier(0.7, 0.0, 1.0, 1.0),
 }
 
 #screen.active-statusbar > #lockscreen {
@@ -39,13 +24,8 @@
 
 #lockscreen.unlocked {
   transform: scale(2);
-  pointer-events: none;
-}
-
-#lockscreen.unlocked #lockscreen-bg,
-#lockscreen.unlocked #lockscreen-canvas,
-#lockscreen.unlocked .lockscreen-icon {
   opacity: 0;
+  pointer-events: none;
 }
 
 #screen.screenoff > #lockscreen,
@@ -248,20 +228,10 @@
   transition: opacity 0.5s ease;
 }
 
-#lockscreen-area-unlock .lockscreen-icon {
-  right: 4rem;
-}
-
-#lockscreen-area-camera .lockscreen-icon {
-  left: 4rem;
-}
-
 .lockscreen-icon {
   margin-top: 2rem;
   width: 6rem;
   height: 6rem;
-  position: absolute;
-  top: 23rem;
 
   pointer-events: none;
 }
@@ -330,6 +300,7 @@ button::-moz-focus-inner {
   background-image: url('./images/icon-unlock.png');
   background-position: center;
   background-repeat: no-repeat;
+  background-size: 3rem;
 }
 
 .lockscreen-icon-left, .lockscreen-icon-right {
@@ -347,6 +318,7 @@ button::-moz-focus-inner {
   background-image: url('./images/icon-camera.png');
   background-position: center;
   background-repeat: no-repeat;
+  background-size: 2.4rem;
 }
 
 #lockscreen-alt-camera {

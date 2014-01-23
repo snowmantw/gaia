@@ -22,7 +22,6 @@
   <body>
 
     <div id="lockscreen" data-panel="main" data-z-index-level="lockscreen">
-      <div id="lockscreen-bg"></div>
       <div id="lockscreen-area"></div>
       <div id="lockscreen-area-unlock"
            class="lockscreen-icon-area lockscreen-icon-right dark" role="button"
@@ -50,10 +49,6 @@
   <script type="application/javascript">
   var LockScreen = function() {
     this.intentionRouter = {};
-    this.intentionRouter.unlockingStart = function() {
-    };
-    this.intentionRouter.unlockingStop = function() {
-    };
     this.intentionRouter.unlockerInitialize =
     (function _unlockerInitialize() {
       this._unlockerInitialized = true;
