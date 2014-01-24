@@ -25,8 +25,13 @@
   opacity: 1;
 }
 
-#lockscreen.unlocked #lockscreen-bg,
+#lockscreen #lockscreen-bg,
 #lockscreen #lockscreen-canvas,
+#lockscreen #lockscreen-conn-states,
+#lockscreen #lockscreen-mute,
+#lockscreen #lockscreen-alt-camera-button,
+#lockscreen #lockscreen-clock-numbers,
+#lockscreen #lockscreen-clock-meridiem,
 #lockscreen .lockscreen-icon {
   transition:
     opacity 1s cubic-bezier(0.7, 0.0, 1.0, 1.0);
@@ -44,6 +49,11 @@
 
 #lockscreen.unlocked #lockscreen-bg,
 #lockscreen.unlocked #lockscreen-canvas,
+#lockscreen.unlocked #lockscreen-conn-states,
+#lockscreen.unlocked #lockscreen-mute,
+#lockscreen.unlocked #lockscreen-alt-camera-button,
+#lockscreen.unlocked #lockscreen-clock-numbers,
+#lockscreen.unlocked #lockscreen-clock-meridiem,
 #lockscreen.unlocked .lockscreen-icon {
   opacity: 0;
 }
