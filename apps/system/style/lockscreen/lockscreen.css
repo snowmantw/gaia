@@ -38,6 +38,23 @@
   opacity: 0;
 }
 
+#lockscreen span.connstate-line {
+  margin-top: 1rem;
+}
+
+#lockscreen #lockscreen-conn-states {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+#lockscreen-mute {
+  display: none;
+}
+
+#lockscreen-alt-camera {
+  display: none;
+}
+
 /*for the opacity experiment*/
 #lockscreen span.connstate-line:nth-child(2),
 #lockscreen #lockscreen-conn-states > div:nth-child(1) > span:nth-child(1),
@@ -244,7 +261,8 @@
 }
 
 .lockscreen-clock {
-  margin: -0.8rem 0 -1rem -0.4rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
   font-weight: 300;
 }
 
