@@ -50,7 +50,7 @@ var CallScreen = {
 
   statusMessage: document.getElementById('statusMsg'),
   configs: {
-    mode: 'incoming-call'
+    lockMode: 'incoming-call'
   },
   showStatusMessage: function cs_showStatusMesssage(text) {
     var STATUS_TIME = 2000;
@@ -559,17 +559,27 @@ var CallScreen = {
       case 'lockscreenslide-activate-right':
         CallsHandler.answer();
         break;
-      case 'lockscreen-mode-switch':
-        this.modeSwitch(evt.detail);
+      case 'lockscreen-mode-on':
+        this.modeSwitch(evt.detail, true);
+        break;
+      case 'lockscreen-mode-off':
+        this.modeSwitch(evt.detail, false);
         break;
     }
   },
 
-  modeSwitch: function ls_modeSwitch(mode) {
-    if (mode !== this.configs.mode) {
-      this.initUnlockerEvents();
+  /**
+   * @param {boolean} switcher - true if mode is on, false if off.
+   */
+  modeSwitch: function cs_modeSwitch(mode, switcher) {
+    if (switcher) {
+      if (mode !== this.configs.lockMode) {
+        this.suspendUnlockerEvents();
+      }
     } else {
-      this.suspendUnlockerEvents();
+      if (mode !== this.configs.lockMode) {
+        this.initUnlockerEvents();
+      }
     }
   },
 

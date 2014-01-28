@@ -291,8 +291,11 @@
       case 'emergency-call-leave':
         this.handleEmergencyCallLeave();
         break;
-      case 'lockscreen-mode-switch':
-        this.modeSwitch(evt.detail);
+      case 'lockscreen-mode-on':
+        this.modeSwitch(evt.detail, true);
+        break;
+      case 'lockscreen-mode-off':
+        this.modeSwitch(evt.detail, false);
         break;
     }
   };  // -- LockScreen#handleEvent --
@@ -993,12 +996,19 @@
     });
   };
 
+  /**
+   * @param {boolean} switcher - true if mode is on, false if off.
+   */
   LockScreen.prototype.modeSwitch =
-  function ls_modeSwitch(mode) {
-    if (mode !== this.configs.mode) {
-      this.suspend();
+  function ls_modeSwitch(mode, switcher) {
+    if (switcher) {
+      if (mode !== this.configs.mode) {
+        this.suspend();
+      }
     } else {
-      this.resume();
+      if (mode !== this.configs.mode) {
+        this.resume();
+      }
     }
   };
 
