@@ -1,5 +1,5 @@
 'use strict';
-/* global AppWindowManager, MocksHelper, Rocketbar */
+/* global AppWindowManager, MocksHelper, Rocketbar, MockLockScreen */
 
 requireApp('system/shared/js/url_helper.js');
 requireApp('system/shared/test/unit/mocks/mock_settings_listener.js');
@@ -7,14 +7,13 @@ requireApp('system/test/unit/mock_cards_view.js');
 requireApp('system/test/unit/mock_app_window_manager.js');
 requireApp('system/test/unit/mock_lock_screen.js');
 requireApp('system/js/lockscreen.js');
-mocha.globals(['Rocketbar']);
+mocha.globals(['Rocketbar', 'lockScreen']);
 
 mocha.globals(['dispatchEvent']);
 
 var mocksForRocketBar = new MocksHelper([
   'AppWindowManager',
   'CardsView',
-  'LockScreen',
   'SettingsListener'
 ]).init();
 
@@ -24,6 +23,7 @@ suite('system/Rocketbar', function() {
 
   mocksForRocketBar.attachTestHelpers();
   setup(function(done) {
+    window.lockScreen = MockLockScreen;
     fakeElement = document.createElement('div');
     fakeElement.style.cssText = 'height: 100px; display: block;';
     stubById = this.sinon.stub(document, 'getElementById')

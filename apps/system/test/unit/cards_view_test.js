@@ -21,7 +21,6 @@ var mocksForCardsView = new MocksHelper([
   'TrustedUIManager',
   'UtilityTray',
   'AppWindowManager',
-  'LockScreen',
   'Rocketbar',
   'SleepMenu',
   'OrientationManager',
@@ -36,6 +35,7 @@ suite('cards view >', function() {
 
   mocksForCardsView.attachTestHelpers();
   suiteSetup(function(done) {
+    window.lockScreen = MockLockScreen;
     screenNode = document.createElement('div');
     screenNode.id = 'screen';
     cardsView = document.createElement('div');

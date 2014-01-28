@@ -942,7 +942,7 @@ var CardsView = (function() {
         break;
 
       case 'holdhome':
-        if (LockScreen.locked)
+        if (lockScreen.locked)
           return;
 
         SleepMenu.hide();

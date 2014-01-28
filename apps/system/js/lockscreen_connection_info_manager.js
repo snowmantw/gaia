@@ -52,17 +52,16 @@
       this._connStates = root;
       this._settings = navigator.mozSettings;
 
-      var self = this;
-
       this._connStates.hidden = false;
-      SIMSlotManager.getSlots().forEach(function(simslot, index) {
+      SIMSlotManager.getSlots().forEach((function(simslot, index) {
         // connection state
-        self._connStates.appendChild(self._createConnStateElement());
+        this._connStates.appendChild(this._createConnStateElement());
         simslot.conn.addEventListener('voicechange',
-          function(index) {
-            self.updateConnState(simslot);
-        });
-      });
+          (function(index) {
+            this.updateConnState(simslot);
+          }).bind(this));
+      }).bind(this));
+
 
       // event handlers
       window.addEventListener('simslot-cardstatechange', function(evt) {
