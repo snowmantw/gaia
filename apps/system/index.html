@@ -150,6 +150,9 @@
     <script defer src="/shared/js/lockscreen_slide.js"></script>
     <script defer src="js/lockscreen_connection_info_manager.js"></script>
     <script defer src="js/lockscreen.js"></script>
+    <script defer src="js/lockscreen/mediator.js"></script>
+    <script defer src="js/lockscreen/factory.js"></script>
+    <script defer src="js/lockscreen/widgets/demo.js"></script>
 
     <!-- PIN Unlocking -->
     <script defer src="js/sim_lock.js"></script>
@@ -1066,6 +1069,11 @@
               <div id="lockscreen-date"></div>
             </div>
             <div id="notifications-lockscreen-container">
+            </div>
+            <div id="lockscreen-demo-widget" style="position:absolute; top: 20rem;">
+              <div class="dw-lock" style="font-size: 16pt; margin-top:0.5rem">Lock</div>
+              <div class="dw-unlock" style="font-size: 16pt; margin-top: 0.5rem">Unlock</div>
+              <div class="dw-camera" style="font-size: 16pt; margin-top: 0.5rem">Camera</div>
             </div>
             <div id="lockscreen-area"></div>
             <div id="lockscreen-media-container" hidden>
