@@ -57,16 +57,16 @@
     } else {
       switch(evt.type) {
         case 'lockscreen-request-lock':
-          this.requestLock();
+          this.responseLock();
           break;
         case 'lockscreen-request-unlock':
-          this.requestUnlock();
+          this.responseUnlock();
           break;
         case 'lockscreen-request-invoke':
-          this.requestInvoke(evt.detail.request);
+          this.responseInvoke(evt.detail.request);
           break;
         case 'lockscreen-request-canvas':
-          this.requestCanvas(evt.detail.request);
+          this.responseCanvas(evt.detail.request);
           break;
       }
     }
@@ -108,19 +108,19 @@
   };
 
 
-  LockScreen.prototype.requestLock =
+  LockScreen.prototype.responseLock =
   function ls_requestLock() {
     // TODO: Do real lock. This is for demo.
     self.lockScreen.lock();
   };
 
-  LockScreen.prototype.requestUnlock =
+  LockScreen.prototype.responseUnlock =
   function ls_requestUnlock() {
     // TODO: Do real lock. This is for demo.
     self.lockScreen.unlock();
   };
 
-  LockScreen.prototype.requestInvoke =
+  LockScreen.prototype.responseInvoke =
   function ls_requestInvoke(request) {
     // Target: either SecureApp or Widget.
     var {method, detail} = request,
@@ -130,7 +130,7 @@
     fn(detail);
   };
 
-  LockScreen.prototype.requestCanvas =
+  LockScreen.prototype.responseCanvas =
   function ls_requestCanvas(request) {
     var {method, selector, response} = request,
         fn = (method === 'id') ?
