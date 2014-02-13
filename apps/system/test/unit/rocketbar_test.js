@@ -5,10 +5,7 @@ requireApp('system/shared/js/url_helper.js');
 requireApp('system/shared/test/unit/mocks/mock_settings_listener.js');
 requireApp('system/test/unit/mock_cards_view.js');
 requireApp('system/test/unit/mock_app_window_manager.js');
-requireApp('system/test/unit/mock_lock_screen.js', function() {
-  window.lockScreen = MockLockScreen;
-});
-requireApp('system/js/lockscreen.js');
+requireApp('system/test/unit/mock_lock_screen.js');
 mocha.globals(['Rocketbar', 'lockScreen']);
 
 mocha.globals(['dispatchEvent']);
@@ -20,11 +17,17 @@ var mocksForRocketBar = new MocksHelper([
 ]).init();
 
 suite('system/Rocketbar', function() {
+  var originalLocked;
   var stubById;
   var fakeElement;
 
   mocksForRocketBar.attachTestHelpers();
   setup(function(done) {
+    window.lockScreen = MockLockScreen;
+    originalLocked = window.lockScreen.locked;
+
+    // The tests except it always false in this file.
+    window.lockScreen.locked = false;
     fakeElement = document.createElement('div');
     fakeElement.style.cssText = 'height: 100px; display: block;';
     stubById = this.sinon.stub(document, 'getElementById')
@@ -35,6 +38,7 @@ suite('system/Rocketbar', function() {
 
   teardown(function() {
     stubById.restore();
+    window.lockScreen.locked = originalLocked;
     this.sinon.clock.restore();
   });
 
