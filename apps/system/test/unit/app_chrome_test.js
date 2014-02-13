@@ -219,5 +219,5 @@ suite('system/AppChrome', function() {
     var spyGetBarHeight = this.sinon.spy(chrome1, 'getBarHeight');
 
     assert.isTrue(chrome1.getBarHeight.called);
-  }
+  });
 });
