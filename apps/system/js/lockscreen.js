@@ -735,7 +735,6 @@
       case 'emergency-call':
         // create the <iframe> and load the emergency call
         frame = document.createElement('iframe');
-
         frame.src = './emergency-call/index.html';
         frame.onload = function emergencyCallLoaded() {
           if (callback) {
@@ -743,7 +742,6 @@
           }
         };
         this.panelEmergencyCall.appendChild(frame);
-
         break;
 
       case 'camera':
