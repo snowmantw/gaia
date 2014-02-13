@@ -330,6 +330,11 @@ var Rocketbar = {
    * @param {Boolean} isTaskManager, true if we are opening in task manager.
    */
   render: function(isTaskManager) {
+    console.log('>>>> Why Travis got stuck and' +
+        'different from the local result? ' +
+        typeof window.lockScreen +
+        ' | ' +
+        (window.lockScreen ? window.lockScreen.locked : '| no lockscreen'));
     if (window.lockScreen && window.lockScreen.locked) {
       return;
     }
