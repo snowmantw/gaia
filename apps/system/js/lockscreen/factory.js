@@ -8,17 +8,17 @@
  */
 (function(exports) {
 
-  var WidgetFactory = function() {
+  var LockScreenWidgetFactory = function() {
     this.configs.events.forEach((ename)=>{
       window.addEventListener(ename, this);
       this.configs.classes = {
-        'LockScreenSlide': self.LockScreenSlide,
-        'AlternativeCamera': self.LockScreenAlternativeCamera,
-        'DemoWidget': self.LockScreenDemoWidget
+        'AlternativeCamera': window.LockScreenAlternativeCamera,
+        'Slide': window.LockScreenSlideWidget,
+        'Bootstrap': window.LockScreenBootstrapWidget
       };
     });
   };
-  WidgetFactory.prototype = {
+  LockScreenWidgetFactory.prototype = {
     configs: {
       events: [
         'lockscreen-launch-widget'
@@ -29,20 +29,20 @@
     }
   };
 
-  WidgetFactory.prototype.handleEvent =
-  function wf_handleEvent(evt) {
+  LockScreenWidgetFactory.prototype.handleEvent =
+  function lswf_handleEvent(evt) {
     if ('lockscreen-launch-widget' === evt.type) {
       var request = evt.detail.request,
-          widget = this.launch(evt.detail.request);
+        widget = this.launch(evt.detail.request);
       this.publish('lockscreen-register-widget',
-          { 'name': request.name,
-            'widget': widget
-          });
+        { 'name': request.name,
+          'widget': widget
+        });
     }
   };
 
-  WidgetFactory.prototype.launch =
-  function wf_launch(request) {
+  LockScreenWidgetFactory.prototype.launch =
+  function lswf_launch(request) {
     if (this.configs.classes[request.name]) {
       return new this.configs.classes[request.name]();
     } else {
@@ -50,11 +50,11 @@
     }
   };
 
-  WidgetFactory.prototype.publish =
-  function wf_publish(type, detail) {
+  LockScreenWidgetFactory.prototype.publish =
+  function lswf_publish(type, detail) {
     window.dispatchEvent(new CustomEvent(type, {'detail': detail}));
   };
 
   /** @exports LockScreenWidgetFactory */
-  exports.LockScreenWidgetFactory = WidgetFactory;
-})(self);
+  exports.LockScreenWidgetFactory = LockScreenWidgetFactory;
+})(window);

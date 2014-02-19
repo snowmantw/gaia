@@ -16,10 +16,11 @@
  */
 (function(exports) {
 
-  var LockScreen = function() {
+  var LockScreenMediator = function() {
     this.listenEvents();
+    this.bootstrap();
   };
-  LockScreen.prototype = {
+  LockScreenMediator.prototype = {
     states: {
       locked: false
     },
@@ -39,8 +40,8 @@
     widgets: {}
   };
 
-  LockScreen.prototype.handleEvent =
-  function ls_handleEvent(evt) {
+  LockScreenMediator.prototype.handleEvent =
+  function lsm_handleEvent(evt) {
     var name = evt.detail.name,
         widget = this.widgets[name];
 
@@ -72,24 +73,24 @@
     }
   };
 
-  LockScreen.prototype.listenEvents =
-  function ls_listenEvents() {
+  LockScreenMediator.prototype.listenEvents =
+  function lsm_listenEvents() {
     this.configs.requests.concat(this.configs.events)
       .forEach((ename)=> {
         window.addEventListener(ename, this);
       });
   };
 
-  LockScreen.prototype.suspendEvents =
-  function ls_suspendEvents() {
+  LockScreenMediator.prototype.suspendEvents =
+  function lsm_suspendEvents() {
     this.configs.requests.concat(this.configs.events)
       .forEach((ename)=> {
         window.removeEventListener(ename, this);
       });
   };
 
-  LockScreen.prototype.register =
-  function ls_register(name, widget) {
+  LockScreenMediator.prototype.register =
+  function lsm_register(name, widget) {
     if (this.widgets[name]) {
       return;
     }
@@ -97,8 +98,8 @@
     widget.activate();
   };
 
-  LockScreen.prototype.unregister =
-  function ls_unregister(name) {
+  LockScreenMediator.prototype.unregister =
+  function lsm_unregister(name) {
     if (!this.widgets[name]) {
       return;
     }
@@ -108,30 +109,34 @@
   };
 
 
-  LockScreen.prototype.responseLock =
-  function ls_requestLock() {
+  LockScreenMediator.prototype.responseLock =
+  function lsm_requestLock() {
     // TODO: Do real lock. This is for demo.
+    // Must handle passcode.
     self.lockScreen.lock();
   };
 
-  LockScreen.prototype.responseUnlock =
-  function ls_requestUnlock() {
+  LockScreenMediator.prototype.responseUnlock =
+  function lsm_requestUnlock() {
     // TODO: Do real lock. This is for demo.
+    // Must handle passcode.
     self.lockScreen.unlock();
   };
 
-  LockScreen.prototype.responseInvoke =
-  function ls_requestInvoke(request) {
-    // Target: either SecureApp or Widget.
+  LockScreenMediator.prototype.responseInvoke =
+  function lsm_responseInvoke(request) {
+    // Target: SecureApp, Widget or Activity.
     var {method, detail} = request,
         fn = (method === 'secureapp') ?
              this.invokeSecureApp.bind(this) :
-             this.invokeWidget.bind(this);
+             ((method === 'activity') ?
+             this.invokeActivity.bind(this) :
+             this.invokeWidget.bind(this));
     fn(detail);
   };
 
-  LockScreen.prototype.responseCanvas =
-  function ls_requestCanvas(request) {
+  LockScreenMediator.prototype.responseCanvas =
+  function lsm_responseCanvas(request) {
     var {method, selector, response} = request,
         fn = (method === 'id') ?
           document.getElementById.bind(document) :
@@ -141,13 +146,13 @@
     // TODO: If we have shadow DOM here, we can isolate widgets better.
     if (!canvas) {
       throw new Error('Can\t locate the widget canvas element with selector: ' +
-          selector);
+        selector);
     }
     response(canvas);
   };
 
-  LockScreen.prototype.invokeSecureApp =
-  function ls_invokeSecureApp(detail) {
+  LockScreenMediator.prototype.invokeSecureApp =
+  function lsm_invokeSecureApp(detail) {
     var {url, manifestURL} = detail;
     this.publish('secure-launchapp',
       { 'appURL': url,
@@ -156,21 +161,40 @@
     );
   };
 
-  LockScreen.prototype.invokeWidget =
-  function ls_invokeWidget(request) {
-    if (!this.widgets[name]) {
-      this.publish('lockscreen-launch-widget', {'name': name});
+  LockScreenMediator.prototype.invokeActivity =
+  function lsm_invokeActivity(detail) {
+    // Activity would be trigger then we will unlock.
+    var {content, onsuccess, onerror} = detail,
+        activity = new window.MozActivity(content);
+    activity.onerror   = onerror   || (()=>{});
+    activity.onsuccess = onsuccess || (()=>{});
+    this.responseUnlock();
+  };
+
+  LockScreenMediator.prototype.invokeWidget =
+  function lsm_invokeWidget(request) {
+    if (!this.widgets[request.name]) {
+      this.publish('lockscreen-launch-widget',
+        {'request': {'name': request.name}});
     } else {
-      this.widgets[name].activate();
+      this.widgets[request.name].activate();
     }
   };
 
-  LockScreen.prototype.publish =
-  function wf_publish(type, detail) {
+  LockScreenMediator.prototype.publish =
+  function lsm_publish(type, detail) {
     window.dispatchEvent(new CustomEvent(type, {'detail': detail}));
   };
 
-  /** @exports LockScreenMediator */
-  exports.LockScreenMediator = LockScreen;
+  LockScreenMediator.prototype.bootstrap =
+  function lsm_bootstrap() {
+    // The only one default widget would
+    // be launched by this mediator.
+    var request = { 'name': 'Bootstrap' };
+    var detail = { 'request': request };
+    this.publish('lockscreen-launch-widget', detail);
+  };
 
+  /** @exports LockScreenMediator */
+  exports.LockScreenMediator = LockScreenMediator;
 })(self);

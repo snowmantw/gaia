@@ -4,10 +4,9 @@
 'use strict';
 
 /**
- * LockScreen now use strategy pattern to adapt the unlocker, which would
- * report intentions like unlocking and launching camera to finish the job.
- *
- * @see intentionRouter in the component.
+ * LockScreen now is a mediator, @see LockScreenMediator.
+ * This legacy one is for safety, and keep functions which
+ * are not migrated into the mediator yet.
  */
 (function(exports) {
 
@@ -20,7 +19,6 @@
     },
     // The unlocking strategy.
     _unlocker: null,
-    _unlockerInitialized: false,
 
     /*
     * Lockscreen connection information manager
@@ -272,25 +270,6 @@
           this.switchPanel();
         }
         break;
-      case 'lockscreenslide-unlocker-initializer':
-        this._unlockerInitialized = true;
-        break;
-      case 'lockscreenslide-near-left':
-        break;
-      case 'lockscreenslide-near-right':
-        break;
-      case 'lockscreenslide-unlocking-start':
-        this._notifyUnlockingStart();
-        break;
-      case 'lockscreenslide-unlocking-stop':
-        this._notifyUnlockingStop();
-        break;
-      case 'lockscreenslide-activate-left':
-        this._activateCamera();
-        break;
-      case 'lockscreenslide-activate-right':
-        this._activateUnlock();
-        break;
       case 'emergency-call-leave':
         this.handleEmergencyCallLeave();
         break;
@@ -318,12 +297,10 @@
   LockScreen.prototype.init =
   function ls_init() {
     this.ready = true;
-    this._unlocker = new window.LockScreenSlide();
     this.getAllElements();
 
     this.lockIfEnabled(true);
     this.writeSetting(this.enabled);
-    this.initUnlockerEvents();
     this.initEmergencyCallEvents();
 
     /* Status changes */
@@ -404,28 +381,6 @@
       this.passCodeRequestTimeout = value;
     }).bind(this));
     navigator.mozL10n.ready(this.l10nInit.bind(this));
-  };
-
-  LockScreen.prototype.initUnlockerEvents =
-  function ls_initUnlockerEvents() {
-    window.addEventListener('lockscreenslide-unlocker-initializer', this);
-    window.addEventListener('lockscreenslide-near-left', this);
-    window.addEventListener('lockscreenslide-near-right', this);
-    window.addEventListener('lockscreenslide-unlocking-start', this);
-    window.addEventListener('lockscreenslide-activate-left', this);
-    window.addEventListener('lockscreenslide-activate-right', this);
-    window.addEventListener('lockscreenslide-unlocking-stop', this);
-  };
-
-  LockScreen.prototype.suspendUnlockerEvents =
-  function ls_initUnlockerEvents() {
-    window.removeEventListener('lockscreenslide-unlocker-initializer', this);
-    window.removeEventListener('lockscreenslide-near-left', this);
-    window.removeEventListener('lockscreenslide-near-right', this);
-    window.removeEventListener('lockscreenslide-unlocking-start', this);
-    window.removeEventListener('lockscreenslide-activate-left', this);
-    window.removeEventListener('lockscreenslide-activate-right', this);
-    window.removeEventListener('lockscreenslide-unlocking-stop', this);
   };
 
   /**
@@ -1005,12 +960,10 @@
 
   LockScreen.prototype.suspend =
   function ls_suspend() {
-    this.suspendUnlockerEvents();
   };
 
   LockScreen.prototype.resume =
   function ls_resume() {
-    this.initUnlockerEvents();
   };
 
   /** @exports LockScreen */
