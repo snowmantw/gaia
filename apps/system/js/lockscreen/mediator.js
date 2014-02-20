@@ -17,6 +17,7 @@
 (function(exports) {
 
   var LockScreenMediator = function() {
+    this.initElements();
     this.listenEvents();
     this.bootstrap();
   };
@@ -24,7 +25,9 @@
     states: {
       locked: false
     },
-    elements: {},
+    elements: {
+      lockscreen: null
+    },
     configs: {
       requests: [
         'lockscreen-request-lock',
@@ -37,7 +40,9 @@
         'lockscreen-unregister-widget'
       ]
     },
-    widgets: {}
+    widgets: {},
+    // Auditors would be asked before we do unlock.
+    unlockAuditors: {}
   };
 
   LockScreenMediator.prototype.handleEvent =
@@ -49,7 +54,8 @@
     if (!widget) {
       switch (evt.type) {
         case 'lockscreen-register-widget':
-          this.register(name, evt.detail.widget);
+          this.register(name, evt.detail.widget,
+              evt.detail.options);
           break;
         case 'lockscreen-unregister-widget':
           this.unregister(name);
@@ -90,11 +96,15 @@
   };
 
   LockScreenMediator.prototype.register =
-  function lsm_register(name, widget) {
+  function lsm_register(name, widget, opts) {
+    var {unlockAuditor} = opts || {};
     if (this.widgets[name]) {
       return;
     }
     this.widgets[name] = widget;
+    if (unlockAuditor) {
+      this.unlockAuditors[name] = widget;
+    }
     widget.activate();
   };
 
@@ -106,8 +116,10 @@
     var widget = this.widgets[name];
     widget.deactivate();
     delete this.widgets[name];
+    if (this.unlockAuditors[name]) {
+      delete this.unlockAuditors[name];
+    }
   };
-
 
   LockScreenMediator.prototype.responseLock =
   function lsm_requestLock() {
@@ -116,11 +128,78 @@
     self.lockScreen.lock();
   };
 
+  LockScreenMediator.prototype.initElements =
+  function lsm_initElemenents() {
+    this.elements.lockscreen = document.getElementById('lockscreen');
+    // TODO: Remove this if we switched from the legacy lockscreen.
+    this.elements.lockscreen.classList.remove('no-transition');
+  };
+
   LockScreenMediator.prototype.responseUnlock =
   function lsm_requestUnlock() {
-    // TODO: Do real lock. This is for demo.
+    // If anyone says 'no', we won't unlock.
+    for (var name in this.unlockAuditors) {
+      var auditor = this.unlockAuditors[name];
+      if (!auditor.permitUnlock()) {
+        return;
+      }
+    }
+    this.publish('will-unlock');
+    var app = window.AppWindowManager ?
+        window.AppWindowManager.getActiveApp() : null,
+        // TODO: SecureWindowManager should be a widget.
+        // TODO: UnlockAudioPlayer widget
+        // TODO: The instant unlocking, which and when will use it?
+        repaintTimeout = 0,
+        nextPaint = ()=> {
+          clearTimeout(repaintTimeout);
+          this.playUnlockedStyle()
+            .then(()=> {
+              this.elements.lockscreen.hidden = true;
+              this.publish('unlock');
+            });
+        };
+
+    if (app) {
+      app.tryWaitForFullRepaint(nextPaint);
+    } else {
+      // Give up waiting for nextpaint after 400ms
+      // XXX: Does not consider the situation where the app is painted already
+      // behind the lock screen (why?).
+      repaintTimeout = setTimeout(()=> {
+        nextPaint();
+      }, 400);
+    }
+    // TODO: Do real unlock. This is for demo.
     // Must handle passcode.
-    self.lockScreen.unlock();
+    //self.lockScreen.unlock();
+  };
+
+  LockScreenMediator.prototype.playUnlockedStyle =
+  function lsm_playUnlockedStyle() {
+
+    // A tricky way to solve the dilemma: tsEnd need be a reference for
+    // removing it after the transitionend, and it need inside the
+    // Promise constructor to get the resolver.
+    var tsEnd = null;
+    var promise = new window.Promise((resolver, reject) => {
+      // Move to the next step.
+      tsEnd = ()=>{ resolver(); };
+      this.elements.lockscreen.addEventListener('transitionend',tsEnd);
+      // Will trigger the unlocking animation.
+      this.elements.lockscreen.classList.add('unlocked');
+    });
+
+    // A pre-defined step to clean the callback.
+    promise.then(()=>{
+      this.elements.lockscreen.removeEventListener('transitionend', tsEnd);
+    });
+    return promise;
+  };
+
+  LockScreenMediator.prototype.responseUnlockingEnd =
+  function lsm_responseUnlockingEnd() {
+    this.elements.lockscreen.hidden = true;
   };
 
   LockScreenMediator.prototype.responseInvoke =

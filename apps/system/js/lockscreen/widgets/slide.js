@@ -17,6 +17,12 @@
   LockScreenSlideWidget.prototype = {
     configs: {
       events: ['will-unlock'],
+      slideEvents: [
+        'lockscreenslide-activate-left',
+        'lockscreenslide-activate-right',
+        'lockscreenslide-unlocking-start',
+        'lockscreenslide-unlocking-stop'
+      ],
       name: 'Slide'
     },
     slide: null
@@ -119,18 +125,16 @@
 
   LockScreenSlideWidget.prototype.listenSlideEvents =
   function lssw_listenSlideEvents() {
-    window.addEventListener('lockscreenslide-activate-left', this);
-    window.addEventListener('lockscreenslide-activate-right', this);
-    window.addEventListener('lockscreenslide-unlocking-start', this);
-    window.addEventListener('lockscreenslide-unlocking-stop', this);
+    this.configs.slideEvents.forEach((ename)=> {
+      window.addEventListener(ename, this);
+    });
   };
 
   LockScreenSlideWidget.prototype.suspendSlideEvents =
   function lssw_suspendSlideEvents() {
-    window.removeEventListener('lockscreenslide-activate-left', this);
-    window.removeEventListener('lockscreenslide-activate-right', this);
-    window.removeEventListener('lockscreenslide-unlocking-start', this);
-    window.removeEventListener('lockscreenslide-unlocking-stop', this);
+    this.configs.slideEvents.forEach((ename)=> {
+      window.removeEventListener(ename, this);
+    });
   };
 
   LockScreenSlideWidget.prototype.suspendEvents =
