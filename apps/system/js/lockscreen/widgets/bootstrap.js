@@ -17,7 +17,8 @@
   LockScreenBootstrapWidget.prototype = {
     configs: {
       widgets: [
-        'Slide'
+        'Slide',
+        'UnlockingSound'
       ],
       name: 'Bootstrap'
     }

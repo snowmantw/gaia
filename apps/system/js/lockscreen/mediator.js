@@ -145,10 +145,9 @@
       }
     }
     this.publish('will-unlock');
+    this.publish('secure-modeoff');
     var app = window.AppWindowManager ?
         window.AppWindowManager.getActiveApp() : null,
-        // TODO: SecureWindowManager should be a widget.
-        // TODO: UnlockAudioPlayer widget
         // TODO: The instant unlocking, which and when will use it?
         repaintTimeout = 0,
         nextPaint = ()=> {
@@ -158,18 +157,10 @@
               this.elements.lockscreen.hidden = true;
               this.publish('unlock');
             });
-        };
-
-    if (app) {
-      app.tryWaitForFullRepaint(nextPaint);
-    } else {
-      // Give up waiting for nextpaint after 400ms
-      // XXX: Does not consider the situation where the app is painted already
-      // behind the lock screen (why?).
-      repaintTimeout = setTimeout(()=> {
-        nextPaint();
-      }, 400);
-    }
+        },
+        waitPaint = app ? app.tryWaitForFullRepaint.bind(app, nextPaint) :
+                    setTimeout.bind(this, nextPaint, 400);
+    waitPaint();
     // TODO: Do real unlock. This is for demo.
     // Must handle passcode.
     //self.lockScreen.unlock();

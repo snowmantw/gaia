@@ -14,7 +14,8 @@
       this.configs.classes = {
         'AlternativeCamera': window.LockScreenAlternativeCamera,
         'Slide': window.LockScreenSlideWidget,
-        'Bootstrap': window.LockScreenBootstrapWidget
+        'Bootstrap': window.LockScreenBootstrapWidget,
+        'UnlockingSound': window.LockScreenUnlockingSoundWidget
       };
     });
   };
