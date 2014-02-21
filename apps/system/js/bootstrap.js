@@ -20,9 +20,6 @@ window.addEventListener('load', function startup() {
     }
     /** @global */
     window.activityWindowFactory = new ActivityWindowFactory();
-    /** @global */
-    window.lockScreenWidgetFactory = new LockScreenWidgetFactory();
-    window.lockScreenMediator = new LockScreenMediator();
   }
 
   function safelyLaunchFTU() {
