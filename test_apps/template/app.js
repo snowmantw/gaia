@@ -7,7 +7,7 @@
           markers = new OpenLayers.Layer.Markers('Markers');
 
       this.layers.markers = markers;
-      this.map = new OpenLayers.Map('mapdiv');
+      this.map = new OpenLayers.Map(this.configs.mapID);
       this.map.addLayer(new OpenLayers.Layer.OSM());
       this.map.setCenter(defaultCenter, this.configs.defaults.zoom);
       this.map.addLayer(markers);
@@ -18,7 +18,9 @@
         defaults: {
           zoom: 16,
           center: [-0.1279688, 51.5077286]
-        }
+        },
+        mapID: 'mapdiv',
+        buttonID: 'submit'
       },
       map: null,
       layers: {
@@ -31,9 +33,12 @@
             .transform(
               new OpenLayers.Projection('EPSG:4326'), // transform from WGS 1984
               this.map.getProjectionObject() // to Spherical Mercator Projection
-            );
-      this.markers.addMarker(new OpenLayers.Marker(lonLat));
+            ),
+          markerIcon = new OpenLayers.Icon('marker.png'),
+          marker = new OpenLayers.Marker(lonLat, markerIcon);
+      this.layers.markers.addMarker(marker);
       this.map.setCenter(lonLat, this.configs.defaults.zoom);
+      console.log('>> recenter done inner', lon, lat);
     };
 
     App.prototype.getLocation = function() {
@@ -41,7 +46,8 @@
         var promise = new Promise((resolve, reject)=>{
           // When get the result, continue the Promise.
           navigator.geolocation
-          .getCurrentPosition(function(r){console.log('>> r', r); resolve(r);});
+          .getCurrentPosition(function(r){
+            console.log('>> promise result', r); resolve(r);});
         });
         return promise;
       } else {
@@ -50,12 +56,17 @@
     };
 
     App.prototype.main = function() {
-      document.getElementById('submit')
-        .addEvent('click', (evt) => {
-          this.getLocation().then(()=>{console.log('OK');});
+      document.getElementById(this.configs.buttonID)
+        .addEventListener('click', (evt) => {
+          console.log('>> button clicked');
+          this.getLocation().then((pos)=>{
+            this.recenter(pos.coords.longitude, pos.coords.latitude);
+            console.log('>> recenter done');
+          });
         });
     };
 
     exports.App = App;
     exports.app = new App();
+    exports.app.main();
 })(window);

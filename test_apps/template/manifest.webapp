@@ -2,6 +2,7 @@
   "name": "Template",
   "description": "Web app template",
   "type": "privileged",
+  "orientation": ["portrait"],
   "permissions": {
     "geolocation": {}
   },
