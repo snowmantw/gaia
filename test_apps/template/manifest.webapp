@@ -1,6 +1,10 @@
 {
   "name": "Template",
   "description": "Web app template",
+  "type": "privileged",
+  "permissions": {
+    "geolocation": {}
+  },
   "launch_path": "/index.html",
   "developer": {
     "name": "The Gaia Team",
