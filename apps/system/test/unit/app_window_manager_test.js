@@ -1,10 +1,19 @@
 /* global AppWindowManager, AppWindow, homescreenLauncher,
           MockAttentionScreen, HomescreenWindow, MocksHelper,
-          MockSettingsListener, MockLockScreen, HomescreenLauncher */
+          MockSettingsListener, HomescreenLauncher */
 'use strict';
 
+mocha.globals(['SettingsListener', 'removeEventListener', 'addEventListener',
+      'dispatchEvent', 'ActivityWindow',
+      'AppWindowManager', 'Applications', 'ManifestHelper',
+      'KeyboardManager', 'StatusBar', 'HomescreenWindow',
+      'SoftwareButtonManager', 'AttentionScreen', 'AppWindow',
+      'OrientationManager', 'BrowserFrame',
+      'BrowserConfigHelper', 'System', 'BrowserMixin', 'TransitionMixin',
+      'homescreenLauncher', 'layoutManager']);
+
 requireApp('system/shared/test/unit/mocks/mock_manifest_helper.js');
-requireApp('system/test/unit/mock_lock_screen.js');
+requireApp('system/test/unit/mock_system.js');
 requireApp('system/test/unit/mock_orientation_manager.js');
 requireApp('system/test/unit/mock_applications.js');
 requireApp('system/test/unit/mock_activity_window.js');
@@ -21,10 +30,10 @@ requireApp('system/shared/test/unit/mocks/mock_settings_listener.js');
 
 var mocksForAppWindowManager = new MocksHelper([
   'OrientationManager', 'AttentionScreen',
-  'ActivityWindow',
+  'ActivityWindow', 'System',
   'Applications', 'SettingsListener', 'HomescreenLauncher',
   'ManifestHelper', 'KeyboardManager', 'StatusBar', 'SoftwareButtonManager',
-  'HomescreenWindow', 'AppWindow', 'LayoutManager', 'LockScreen'
+  'HomescreenWindow', 'AppWindow', 'LayoutManager',
 ]).init();
 
 suite('system/AppWindowManager', function() {
@@ -34,8 +43,7 @@ suite('system/AppWindowManager', function() {
   setup(function(done) {
     stubById = this.sinon.stub(document, 'getElementById');
     stubById.returns(document.createElement('div'));
-
-    window.lockScreen = MockLockScreen;
+    
     window.layoutManager = new window.LayoutManager();
 
     home = new HomescreenWindow('fakeHome');
@@ -59,7 +67,6 @@ suite('system/AppWindowManager', function() {
 
   teardown(function() {
     AppWindowManager.uninit();
-    delete window.lockScreen;
     delete window.layoutManager;
     // MockHelper won't invoke mTeardown() for us
     // since MockHomescreenLauncher is instantiable now
@@ -212,7 +219,8 @@ suite('system/AppWindowManager', function() {
     });
 
     test('FTU is skipped when lockscreen is active', function() {
-      MockLockScreen.locked = true;
+      var originalLocked = window.System.locked;
+      window.System.locked = true;
       injectRunningApps();
       var stubDisplay = this.sinon.stub(AppWindowManager, 'display');
       var stubSetVisible = this.sinon.stub(home, 'setVisible');
@@ -220,6 +228,7 @@ suite('system/AppWindowManager', function() {
       AppWindowManager.handleEvent({ type: 'ftuskip' });
       assert.isFalse(stubDisplay.calledWith());
       assert.isTrue(stubSetVisible.calledWith(false));
+      window.System.locked = originalLocked;
     });
 
     test('System resize', function() {

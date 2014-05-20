@@ -17,7 +17,7 @@ suite('SIMSlotManager', function() {
   setup(function(callback) {
     navigator.mozIccManager = MockIccManager;
     navigator.mozMobileConnections = MockNavigatorMozMobileConnections;
-    requireApp('system/js/simslot_manager.js', callback);
+    requireApp('system/shared/js/simslot_manager.js', callback);
   });
 
   teardown(function() {

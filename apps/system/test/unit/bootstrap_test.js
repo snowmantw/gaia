@@ -40,14 +40,54 @@ requireApp('system/js/visibility_manager.js');
 
 requireApp('system/test/unit/mock_applications.js');
 requireApp('system/test/unit/mock_l10n.js');
+requireApp('system/test/unit/mock_media_recording.js');
+requireApp('system/test/unit/mock_mediaplayback_manager.js');
 requireApp('system/test/unit/mock_places.js');
 requireApp('system/test/unit/mock_screen_manager.js');
 requireApp('system/test/unit/mock_task_manager.js');
+
+mocha.globals([
+  'accessibility',
+  'activityWindowManager',
+  'activities',
+  'applications',
+  'appWindowFactory',
+  'cancelHomeTouchstart',
+  'cancelHomeTouchend',
+  'cancelHomeClick',
+  'developerHUD',
+  'dialerAgent',
+  'homeGesture',
+  'homeSearchbar',
+  'homescreenLauncher',
+  'internetSharing',
+  'layoutManager',
+  'lockScreenWindowManager',
+  'mediaRecording',
+  'mediaPlaybackManager',
+  'permissionManager',
+  'places',
+  'remoteDebugger',
+  'rocketbar',
+  'secureWindowFactory',
+  'secureWindowManager',
+  'Shortcuts',
+  'sourceView',
+  'softwareButtonManager',
+  'storage',
+  'systemDialogManager',
+  'taskManager',
+  'telephonySettings',
+  'ttlView',
+  'visibilityManager',
+  'wallpaperURL'
+]);
 
 var mocksForBootstrap = new MocksHelper([
   'Applications',
   'IccHelper',
   'ScreenManager',
+  'MediaPlaybackManager',
   'Places',
   'SettingsListener',
   'SettingsURL',
