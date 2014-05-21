@@ -101,6 +101,11 @@ var FtuLauncher = {
           this.close();
         }
         break;
+
+      case 'lock':
+        if (this._isRunningFirstTime)
+          lockScreen.unlock(true);
+        break;
     }
   },
 

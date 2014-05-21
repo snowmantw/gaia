@@ -7,7 +7,15 @@ requireApp('system/shared/test/unit/mocks/mock_icc_helper.js');
 requireApp('system/shared/test/unit/mocks/mock_navigator_moz_telephony.js');
 requireApp('system/shared/test/unit/mocks/mock_app_window_manager.js');
 requireApp('system/test/unit/mock_l10n.js');
-requireApp('system/test/unit/mock_system.js');
+requireApp('system/test/unit/mock_lock_screen.js', function() {
+
+  // Because we can't see it while we attach helpers,
+  // which may not be loaded yet.
+  //
+  // And it can't be used as helper because the name
+  // can't be "MocklockScreen".
+  window.lockScreen = MockLockScreen;
+});
 requireApp('system/js/mock_simslot.js');
 requireApp('system/js/mock_simslot_manager.js');
 requireApp('system/test/unit/mock_app_window_manager.js');
@@ -20,11 +28,10 @@ var mocksForStatusBar = new MocksHelper([
   'MobileOperator',
   'SIMSlotManager',
   'AppWindowManager',
-  'TouchForwarder',
-  'System'
+  'TouchForwarder'
 ]).init();
 
-mocha.globals(['Clock', 'StatusBar', 'System']);
+mocha.globals(['Clock', 'StatusBar', 'lockScreen', 'System']);
 suite('system/Statusbar', function() {
   var mobileConnectionCount = 2;
   var fakeStatusBarNode, fakeTopPanel, fakeStatusBarBackground,
@@ -34,6 +41,9 @@ suite('system/Statusbar', function() {
 
   mocksForStatusBar.attachTestHelpers();
   suiteSetup(function(done) {
+    window.lockScreen = MockLockScreen;
+    originalLocked = window.lockScreen.locked;
+    window.lockScreen.locked = false;
     realMozL10n = navigator.mozL10n;
     navigator.mozL10n = MockL10n;
     realMozMobileConnections = navigator.mozMobileConnections;
@@ -45,6 +55,7 @@ suite('system/Statusbar', function() {
   });
 
   suiteTeardown(function() {
+    window.lockScreen.locked = originalLocked;
     navigator.mozL10n = realMozL10n;
     navigator.mozMobileConnections = realMozMobileConnections;
     navigator.mozTelephony = realMozTelephony;
@@ -191,13 +202,13 @@ suite('system/Statusbar', function() {
       StatusBar.screen = null;
     });
     test('first launch', function() {
-      window.System.locked = true;
+      MockLockScreen.locked = true;
       StatusBar.init();
       assert.equal(StatusBar.clock.timeoutID, null);
       assert.equal(StatusBar.icons.time.hidden, true);
     });
     test('lock', function() {
-      window.System.locked = true;
+      MockLockScreen.locked = true;
       var evt = new CustomEvent('lock');
       StatusBar.handleEvent(evt);
       assert.equal(StatusBar.clock.timeoutID, null);
@@ -217,33 +228,33 @@ suite('system/Statusbar', function() {
     });
     test('attentionsceen hide', function() {
       // Test this when lockscreen is off.
-      var originalLocked = window.System.locked;
-      window.System.locked = false;
+      var originalLocked = window.lockScreen.locked;
+      window.lockScreen.locked = false;
       var evt = new CustomEvent('attentionscreenhide');
       StatusBar.handleEvent(evt);
       assert.notEqual(StatusBar.clock.timeoutID, null);
       assert.equal(StatusBar.icons.time.hidden, false);
-      window.System.locked = originalLocked;
+      window.lockScreen.locked = originalLocked;
     });
-    test('secure app launched, as emergency call when locked', function() {
-      var evt = new CustomEvent('secure-appcreated');
+    test('emergency call when locked', function() {
+      var evt = new CustomEvent('lockpanelchange', {
+        detail: {
+          panel: 'emergency-call'
+        }
+      });
+      StatusBar.screen.classList.add('locked');
       StatusBar.handleEvent(evt);
       assert.notEqual(StatusBar.clock.timeoutID, null);
       assert.equal(StatusBar.icons.time.hidden, false);
-
-      evt = new CustomEvent('secure-appterminated');
-      StatusBar.handleEvent(evt);
-      assert.equal(StatusBar.clock.timeoutID, null);
-      assert.equal(StatusBar.icons.time.hidden, true);
     });
     test('moztime change while lockscreen is unlocked', function() {
-      var originalLocked = window.System.locked;
-      window.System.locked = false;
+      var originalLocked = window.lockScreen.locked;
+      window.lockScreen.locked = false;
       var evt = new CustomEvent('moztimechange');
       StatusBar.handleEvent(evt);
       assert.notEqual(StatusBar.clock.timeoutID, null);
       assert.equal(StatusBar.icons.time.hidden, false);
-      window.System.locked = originalLocked;
+      window.lockScreen.locked = originalLocked;
     });
     test('screen enable but screen is unlocked', function() {
       var evt = new CustomEvent('screenchange', {
@@ -251,7 +262,7 @@ suite('system/Statusbar', function() {
           screenEnabled: true
         }
       });
-      window.System.locked = false;
+      MockLockScreen.locked = false;
       StatusBar.handleEvent(evt);
       assert.notEqual(StatusBar.clock.timeoutID, null);
       assert.equal(StatusBar.icons.time.hidden, false);
@@ -262,7 +273,7 @@ suite('system/Statusbar', function() {
           screenEnabled: true
         }
       });
-      window.System.locked = true;
+      MockLockScreen.locked = true;
       StatusBar.handleEvent(evt);
       assert.equal(StatusBar.clock.timeoutID, null);
       assert.equal(StatusBar.icons.time.hidden, true);

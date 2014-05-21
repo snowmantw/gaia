@@ -122,7 +122,8 @@ function MediaPlayback(client) {
 module.exports = MediaPlayback;
 
 MediaPlayback.Selector = Object.freeze({
-  notificationContainerElement: '#media-playback-container'
+  notificationContainerElement: '#media-playback-container',
+  lockscreenContainerElement: '#lockscreen-media-container'
 });
 
 MediaPlayback.prototype = {
@@ -131,6 +132,12 @@ MediaPlayback.prototype = {
   get notificationContainerElement() {
     return this.client.findElement(
       MediaPlayback.Selector.notificationContainerElement
+    );
+  },
+
+  get lockscreenContainerElement() {
+    return this.client.findElement(
+      MediaPlayback.Selector.lockscreenContainerElement
     );
   },
 
@@ -156,15 +163,30 @@ MediaPlayback.prototype = {
 
   lockScreen: function() {
     this.client.executeScript(function() {
-      window.wrappedJSObject.dispatchEvent(
-        new window.wrappedJSObject.CustomEvent('request-lock'));
+      // The lockscreen window would not be active while we do the test.
+      // XXX: This is a strange issue that only happen on B2G desktop:
+      // the lockscreen window suddenly disappear after the simulator is ready.
+      var lwm = window.wrappedJSObject.lockScreenWindowManager,
+          needRelock = !lwm.states.instance.isActive();
+      if (needRelock) {
+        lwm.closeApp();
+        lwm.openApp();
+      }
+      window.wrappedJSObject.lockScreen.lock();
     });
   },
 
   unlockScreen: function() {
     this.client.executeScript(function() {
-      window.wrappedJSObject.dispatchEvent(
-        new window.wrappedJSObject.CustomEvent('request-unlock'));
+      window.wrappedJSObject.lockScreen.unlock();
     });
+  },
+
+  inLockscreen: function(callback) {
+    this.lockScreen();
+    callback(new MediaPlaybackContainer(
+      this.client, this.lockscreenContainerElement
+    ));
+    this.unlockScreen();
   }
 };

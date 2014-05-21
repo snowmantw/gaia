@@ -1,5 +1,5 @@
 /* global KeyboardManager, softwareButtonManager, StatusBar,
-          System*/
+          System, lockScreen */
 'use strict';
 
 (function(exports) {
@@ -53,7 +53,7 @@
      * @memberOf LayoutManager
      */
     get height() {
-      if (System.locked) {
+      if (lockScreen.locked) {
         return window.innerHeight;
       } else {
         return window.innerHeight -

@@ -1,12 +1,12 @@
 'use strict';
 
 requireApp('system/shared/test/unit/mocks/mock_lazy_loader.js');
-mocha.globals(['UtilityTray', 'System']);
+mocha.globals(['UtilityTray', 'lockScreen']);
 
-requireApp('system/test/unit/mock_system.js');
+requireApp('system/test/unit/mock_lock_screen.js');
 
 var mocksHelperForUtilityTray = new MocksHelper([
-  'LazyLoader', 'System'
+  'LazyLoader'
 ]);
 mocksHelperForUtilityTray.init();
 
@@ -45,9 +45,9 @@ suite('system/UtilityTray', function() {
   }
 
   setup(function(done) {
-    window.System = window.MockSystem;
-    originalLocked = window.System.locked;
-    window.System.locked = false;
+    window.lockScreen = window.MockLockScreen;
+    originalLocked = window.lockScreen.locked;
+    window.lockScreen.locked = false;
 
     var statusbar = document.createElement('div');
     statusbar.style.cssText = 'height: 100px; display: block;';
@@ -85,7 +85,7 @@ suite('system/UtilityTray', function() {
 
   teardown(function() {
     stubById.restore();
-    window.System.locked = originalLocked;
+    window.lockScreen.locked = originalLocked;
   });
 
 
@@ -242,14 +242,14 @@ suite('system/UtilityTray', function() {
     });
 
     test('onTouchStart is not called if LockScreen is locked', function() {
-      window.System.locked = true;
+      window.lockScreen.locked = true;
       var stub = this.sinon.stub(UtilityTray, 'onTouchStart');
       UtilityTray.statusbarIcons.dispatchEvent(fakeEvt);
       assert.ok(stub.notCalled);
     });
 
     test('onTouchStart is called if LockScreen is not locked', function() {
-      window.System.locked = false;
+      window.lockScreen.locked = false;
       var stub = this.sinon.stub(UtilityTray, 'onTouchStart');
       UtilityTray.statusbarIcons.dispatchEvent(fakeEvt);
       assert.ok(stub.calledOnce);

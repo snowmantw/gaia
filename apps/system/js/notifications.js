@@ -61,6 +61,8 @@ var NotificationScreen = {
     window.addEventListener('mozChromeNotificationEvent', this);
     this.container =
       document.getElementById('desktop-notifications-container');
+    this.lockScreenContainer =
+      document.getElementById('notifications-lockscreen-container');
     this.toaster = document.getElementById('notification-toaster');
     this.toasterIcon = document.getElementById('toaster-icon');
     this.toasterTitle = document.getElementById('toaster-title');
@@ -80,6 +82,7 @@ var NotificationScreen = {
     this.externalNotificationsCount = 0;
 
     window.addEventListener('utilitytrayshow', this);
+    window.addEventListener('unlock', this.clearLockScreen.bind(this));
     window.addEventListener('visibilitychange', this);
     window.addEventListener('ftuopen', this);
     window.addEventListener('ftudone', this);
@@ -303,6 +306,9 @@ var NotificationScreen = {
   },
 
   addNotification: function ns_addNotification(detail) {
+    // LockScreen window may not opened while this singleton got initialized.
+    this.lockScreenContainer = this.lockScreenContainer ||
+      document.getElementById('notifications-lockscreen-container');
     var notificationNode = document.createElement('div');
     notificationNode.className = 'notification';
 
@@ -393,7 +399,8 @@ var NotificationScreen = {
     // Notification toaster
     if (notify) {
       this.updateToaster(detail, type, dir);
-      if (this.lockscreenPreview || !window.System.locked) {
+      if (this.lockscreenPreview || !window.lockScreen ||
+          !window.lockScreen.locked) {
         this.toaster.classList.add('displayed');
         this._toasterGD.startDetecting();
 
@@ -406,6 +413,30 @@ var NotificationScreen = {
           this._toasterTimeout = null;
           this._toasterGD.stopDetecting();
         }).bind(this), this.TOASTER_TIMEOUT);
+      }
+    }
+
+    // Adding it to the lockscreen if locked and the privacy setting
+    // does not prevent it.
+    if (typeof(window.lockScreen) !== 'undefined' &&
+        window.lockScreen.locked && this.lockscreenPreview) {
+      var lockScreenNode = notificationNode.cloneNode(true);
+
+      // First we try and find an existing notification with the same id.
+      // If we have one, we'll replace it. If not, we'll create a new node.
+      var oldLockScreenNode =
+        this.lockScreenContainer.querySelector(notifSelector);
+      if (oldLockScreenNode) {
+        this.lockScreenContainer.replaceChild(
+          lockScreenNode,
+          oldLockScreenNode
+        );
+      }
+      else {
+        this.lockScreenContainer.insertBefore(
+          lockScreenNode,
+          this.lockScreenContainer.firstElementChild
+        );
       }
     }
 
@@ -454,10 +485,19 @@ var NotificationScreen = {
   removeNotification: function ns_removeNotification(notificationId) {
     var notifSelector = '[data-notification-id="' + notificationId + '"]';
     var notificationNode = this.container.querySelector(notifSelector);
+    this.lockScreenContainer = this.lockScreenContainer ||
+      document.getElementById('notifications-lockscreen-container');
+    if (this.lockScreenContainer) {
+      var lockScreenNotificationNode =
+        this.lockScreenContainer.querySelector(notifSelector);
+    }
 
     if (notificationNode)
       notificationNode.parentNode.removeChild(notificationNode);
 
+    if (lockScreenNotificationNode)
+      lockScreenNotificationNode.parentNode
+        .removeChild(lockScreenNotificationNode);
     this.updateStatusBarIcon();
 
     if (!this.container.firstElementChild) {
@@ -469,6 +509,17 @@ var NotificationScreen = {
   clearAll: function ns_clearAll() {
     while (this.container.firstElementChild) {
       this.closeNotification(this.container.firstElementChild);
+    }
+  },
+
+  clearLockScreen: function ns_clearLockScreen() {
+    // The LockScreenWindow may not be instantiated yet.
+    if (!this.lockScreenContainer) {
+      return;
+    }
+    while (this.lockScreenContainer.firstElementChild) {
+      var element = this.lockScreenContainer.firstElementChild;
+      this.lockScreenContainer.removeChild(element);
     }
   },
 

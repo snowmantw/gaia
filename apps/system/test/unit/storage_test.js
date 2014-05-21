@@ -1,15 +1,14 @@
 'use strict';
-/* global MocksHelper, MockSettingsListener, Storage */
+/* global MocksHelper, MockLockScreen, MockSettingsListener, Storage */
 
-requireApp('system/test/unit/mock_system.js');
+requireApp('system/test/unit/mock_lock_screen.js');
 requireApp('system/shared/test/unit/mocks/mock_settings_listener.js');
 requireApp('system/js/storage.js');
 
-mocha.globals(['System', 'Storage', 'addEventListener',
+mocha.globals(['lockScreen', 'Storage', 'addEventListener',
   'removeEventListener']);
 
 var mocksForStorage = new MocksHelper([
-  'System',
   'SettingsListener'
 ]).init();
 
@@ -20,6 +19,7 @@ suite('system/Storage', function() {
 
   mocksForStorage.attachTestHelpers();
   setup(function() {
+    window.lockScreen = MockLockScreen;
     fakeElement = document.createElement('div');
     fakeElement.style.cssText = 'height: 100px; display: block;';
     stubById = this.sinon.stub(document, 'getElementById')
@@ -40,22 +40,18 @@ suite('system/Storage', function() {
 
     test('sets mode when locked', function() {
       var setModeStub = this.sinon.stub(Storage.prototype, 'setMode');
-      var originalLocked = window.System.locked;
-      window.System.locked = true;
+      window.lockScreen.locked = true;
       subject = new Storage();
       MockSettingsListener.mCallbacks['ums.enabled'](1);
       assert.ok(setModeStub.calledWith(subject.automounterDisable));
-      window.System.locked = originalLocked;
     });
 
     test('sets current mode', function() {
       var setModeStub = this.sinon.stub(Storage.prototype, 'setMode');
-      var originalLocked = window.System.locked;
-      window.System.locked = false;
+      window.lockScreen.locked = false;
       subject = new Storage();
       MockSettingsListener.mCallbacks['ums.enabled'](1);
       assert.ok(setModeStub.calledWith(subject._mode));
-      window.System.locked = originalLocked;
     });
   });
 

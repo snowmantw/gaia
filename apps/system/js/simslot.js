@@ -9,7 +9,12 @@
     'pukRequired': true,
     'networkLocked': true,
     'corporateLocked': true,
-    'serviceProviderLocked': true
+    'serviceProviderLocked': true,
+    'network1Locked': true,
+    'network2Locked': true,
+    'hrpdNetworkLocked': true,
+    'ruimCorporateLocked': true,
+    'ruimServiceProviderLocked': true
   };
   /**
    * SIMSlot is the API wrapper for each mobileConnection,
@@ -24,7 +29,7 @@
    *                         i.e., SIM card.
    * @property {Number} index The slot number of this SIM slot.
    */
-  var SIMSlot = function SIMSlot(conn, index, card) {
+  window.SIMSlot = function SIMSlot(conn, index, card) {
     this.index = index;
     this.conn = conn;
     if (card) {
@@ -133,7 +138,4 @@
   SIMSlot.prototype.isLocked = function ss_isLocked() {
     return !!lockTypes[this.simCard.cardState];
   };
-
-  /** @global SIMSlot */
-  window.SIMSlot = SIMSlot;
-}(window));
+}(this));
