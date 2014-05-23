@@ -707,7 +707,7 @@
 
       case 'holdhome':
         if (this.isShown() ||
-            window.System.locked) {
+            (window.lockScreen && window.lockScreen.locked)) {
           return;
         }
         SleepMenu.hide();

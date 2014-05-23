@@ -47,7 +47,7 @@
   background-color: white;
 }
 
-.appWindow:not(.homescreen):not(.lockScreenWindow).render {
+.appWindow:not(.homescreen).render {
   background-image: none !important;
   background-color: transparent;
 }
@@ -435,7 +435,7 @@
 }
 
 .appWindow.suspended > .identification-overlay,
-#screen.edges .appWindow:not(.active):not(.lockScreenWindow) .identification-overlay.visible {
+#screen.edges .appWindow:not(.active) .identification-overlay.visible {
   opacity: 1;
 }
 
@@ -603,10 +603,6 @@
   100% { transform: translateX(100%); }
 }
 
-.lockScreenWindow.appWindow.render > iframe{
-  background: black;
-}
-
 /* Task Manager */
 #screen.task-manager:not(.active-statusbar):not(.software-button-enabled) > #windows > .appWindow.in-task-manager,
 #screen.task-manager:not(.active-statusbar):not(.software-button-enabled):not(:-moz-full-screen-ancestor) > #windows > .appWindow.in-task-manager:not(.fullscreen-app) {
@@ -621,7 +617,7 @@
 }
 
 /* Edges */
-#screen.edges #windows > .appWindow:not(.homescreen):not(.lockScreenWindow) {
+#screen.edges #windows > .appWindow:not(.homescreen) {
   /* in the viewport but not really */
   transform: translateX(-99.9999%);
   opacity: 1;

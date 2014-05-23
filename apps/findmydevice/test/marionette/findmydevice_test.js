@@ -4,7 +4,6 @@ marionette('Find My Device lock >', function() {
   var assert = require('assert');
 
   var FINDMYDEVICE_TEST_APP = 'app://test-findmydevice.gaiamobile.org';
-  var LOCKSCREEN_APP = 'app://lockscreen.gaiamobile.org';
 
   var client = marionette.client({
     prefs: {
@@ -36,7 +35,6 @@ marionette('Find My Device lock >', function() {
     lockButton.click();
 
     client.switchToFrame();
-    client.apps.switchToApp(LOCKSCREEN_APP);
     var lockscreen = client.findElement('#lockscreen');
     client.waitFor(function() {
       return lockscreen.displayed();

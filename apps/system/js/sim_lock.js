@@ -145,7 +145,7 @@ var SimLock = {
   },
 
   showIfLocked: function sl_showIfLocked(currentSlotIndex, skipped) {
-    if (window.System.locked)
+    if (lockScreen && lockScreen.locked)
       return false;
 
     // FTU has its specific SIM PIN UI

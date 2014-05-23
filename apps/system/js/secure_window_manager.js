@@ -48,7 +48,6 @@
      * @memberof SecureWindowManager#
      */
     configs: {
-      active: true,
       killAnimation: 'immediate',
       listens: ['secure-killapps',
                 'secure-closeapps',
@@ -142,7 +141,6 @@
   SecureWindowManager.prototype.suspend =
     function swm_suspend() {
       this.suspendEvents();
-      this.states.active = false;
 
       // Will suspend all events.
       // But we also want to leave a single entry to resume.
@@ -160,7 +158,6 @@
   SecureWindowManager.prototype.resume =
     function swm_resume() {
       this.initEvents();
-      this.states.active = true;
 
       // To prevent duplicated init.
       self.removeEventListener('secure-modeon', this);

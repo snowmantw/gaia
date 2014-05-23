@@ -62,6 +62,11 @@
       case 'status-active':
       case 'attentionscreenhide':
       case 'will-unlock':
+        if (window.lockScreen && window.lockScreen.locked) {
+          this.publish('showlockscreenwindow');
+          return;
+        }
+
         if (!AttentionScreen.isFullyVisible()) {
           this.publish('showwindow', { type: evt.type });
         }
@@ -102,7 +107,7 @@
 
           if (this._normalAudioChannelActive &&
               evt.detail.channel !== 'normal' &&
-              window.System.locked) {
+              window.lockScreen && window.lockScreen.locked) {
             this._deviceLockedTimer = setTimeout(function setVisibility() {
               this.publish('hidewindow',
                 { screenshoting: false, type: evt.type });

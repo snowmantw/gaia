@@ -83,16 +83,13 @@
       var host = document.location.host;
       var domain = host.replace(/(^[\w\d]+\.)?([\w\d]+\.[a-z]+)/, '$2');
       var protocol = document.location.protocol + '//';
-      var blackListPrefixes = [
-        'lockscreen',   // Bug 1014401
-        'browser'       // Requires nested content processes (bug 761935).
-                        // This is not on the schedule for v1.
+      var browserManifestUrl =
+        protocol + 'browser.' + domain + '/manifest.webapp';
+      var outOfProcessBlackList = [
+        browserManifestUrl
+        // Requires nested content processes (bug 761935).  This is not
+        // on the schedule for v1.
       ];
-      var outOfProcessBlackList = blackListPrefixes.map(function(prefix) {
-        var manifestUrl =
-          protocol + prefix + '.' + domain + '/manifest.webapp';
-        return manifestUrl;
-      });
 
       if (!isOutOfProcessDisabled &&
           outOfProcessBlackList.indexOf(manifestURL) === -1) {

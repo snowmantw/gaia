@@ -56,9 +56,6 @@ window.addEventListener('load', function startup() {
       new SystemDialogManager();
 
     /** @global */
-    window.mediaPlaybackManager = (new window.MediaPlaybackManager()).start();
-
-    /** @global */
     window.lockScreenWindowManager = new window.LockScreenWindowManager();
   }
 

@@ -90,38 +90,8 @@ var InitLogoHandler = {
     logoLoader.onload = this._appendCarrierPowerOn.bind(this);
   },
 
-  requestHideOSLogo: function ilh_requestHideOSLogo() {
-    // If it's enalbed, we need to delay to hide the logo
-    // until the app has been created.
-    var req = window.SettingsListener.getSettingsLock()
-      .get('lockscreen.enabled');
-    req.onsuccess = (function() {
-      var enabled = req.result['lockscreen.enabled'];
-      if (enabled && window.System.locked &&
-          window.lockScreenWindowManager.states.lockScreenReady) {
-        this.osLogo.classList.add('hide');
-      } else if (enabled && window.System.locked &&
-          !window.lockScreenWindowManager.states.lockScreenReady) {
-        // If the event wasn't fired yet.
-        window.addEventListener('lock', this);
-      } else {
-        // If it's not enabled, hide the logo directly.
-        this.osLogo.classList.add('hide');
-      }
-    }).bind(this);
-  },
-
-  handleEvent: function ilh_handleEvent(evt) {
-    switch (evt.type) {
-      case 'lock':
-        // Would only handle this event when bootstrap.
-        window.removeEventListener('lock', this);
-        this.osLogo.classList.add('hide');
-        break;
-      default:
-        this.animate();
-        break;
-    }
+  handleEvent: function ilh_handleEvent() {
+    this.animate();
   },
 
   _removeCarrierPowerOn: function ilh_removeCarrierPowerOn() {
@@ -192,7 +162,8 @@ var InitLogoHandler = {
 
     // No carrier logo - Just animate OS logo.
     if (!self.logoLoader.found) {
-        self.requestHideOSLogo();
+      self.osLogo.classList.add('hide');
+
     // Has carrier logo - Animate carrier logo, then OS logo.
     } else {
       // CarrierLogo is not transparent until now
@@ -223,7 +194,8 @@ var InitLogoHandler = {
           elem.load();
         }
         self.carrierLogo.parentNode.removeChild(self.carrierLogo);
-        self.requestHideOSLogo();
+
+        self.osLogo.classList.add('hide');
         self.carrierPowerOnElement = null;
       });
     }

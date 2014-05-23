@@ -460,7 +460,7 @@
           return defaultVolumeControlChannel;
         } else {
           return homescreenVisible ||
-            (window.System.locked) ||
+            (window.lockScreen && window.lockScreen.locked) ||
             FtuLauncher.isFtuRunning() ? 'notification' : 'content';
         }
     }

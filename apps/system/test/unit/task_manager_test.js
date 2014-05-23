@@ -1,8 +1,8 @@
 /* global MockStackManager, MockNavigatorSettings, MockAppWindowManager,
           TaskManager, Card, TaskCard, AppWindow,
-          MockSystem, MockScreenLayout, MocksHelper */
+          MockLockScreen, MockScreenLayout, MocksHelper */
 'use strict';
-mocha.globals(['System', 'SettingsListener',
+mocha.globals(['lockScreen', 'SettingsListener',
                'TaskManager', 'CardsHelper', 'Card', 'TaskCard', 'BaseUI']);
 
 require('/shared/test/unit/mocks/mock_gesture_detector.js');
@@ -13,7 +13,7 @@ requireApp('system/test/unit/mock_trusted_ui_manager.js');
 requireApp('system/test/unit/mock_utility_tray.js');
 requireApp('system/test/unit/mock_app_window_manager.js');
 requireApp('system/test/unit/mock_app_window.js');
-requireApp('system/test/unit/mock_system.js');
+requireApp('system/test/unit/mock_lock_screen.js');
 requireApp('system/test/unit/mock_orientation_manager.js');
 requireApp('system/test/unit/mock_rocketbar.js');
 requireApp('system/test/unit/mock_sleep_menu.js');
@@ -31,8 +31,7 @@ var mocksForTaskManager = new MocksHelper([
   'SleepMenu',
   'OrientationManager',
   'StackManager',
-  'AppWindow',
-  'System'
+  'AppWindow'
 ]).init();
 
 function waitForEvent(target, name, timeout) {
@@ -62,7 +61,7 @@ suite('system/TaskManager >', function() {
   var screenNode, realMozLockOrientation, realScreenLayout, realMozSettings,
       realSettingsListener;
   var cardsView, cardsList;
-  var originalSystem;
+  var originalLockScreen;
   var ihDescriptor;
 
   function createTouchEvent(type, target, x, y) {
@@ -296,8 +295,8 @@ suite('system/TaskManager >', function() {
       configurable: true
     });
 
-    originalSystem = window.System;
-    window.System = MockSystem;
+    originalLockScreen = window.lockScreen;
+    window.lockScreen = MockLockScreen;
     screenNode = document.createElement('div');
     screenNode.id = 'screen';
     cardsView = document.createElement('div');
@@ -312,7 +311,7 @@ suite('system/TaskManager >', function() {
     realScreenLayout = window.ScreenLayout;
     window.ScreenLayout = MockScreenLayout;
     realMozLockOrientation = screen.mozLockOrientation;
-    screen.mozLockOrientation = function() {};
+    screen.mozLockOrientation = MockLockScreen.mozLockOrientation;
 
     realMozSettings = navigator.mozSettings;
     window.navigator.mozSettings = MockNavigatorSettings;
@@ -354,7 +353,7 @@ suite('system/TaskManager >', function() {
 
   suiteTeardown(function() {
     Object.defineProperty(window, 'innerHeight', ihDescriptor);
-    window.System = originalSystem;
+    window.lockScreen = originalLockScreen;
     screenNode.parentNode.removeChild(screenNode);
     window.ScreenLayout = realScreenLayout;
     screen.mozLockOrientation = realMozLockOrientation;

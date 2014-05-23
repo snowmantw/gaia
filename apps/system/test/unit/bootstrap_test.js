@@ -40,8 +40,6 @@ requireApp('system/js/visibility_manager.js');
 
 requireApp('system/test/unit/mock_applications.js');
 requireApp('system/test/unit/mock_l10n.js');
-requireApp('system/test/unit/mock_media_recording.js');
-requireApp('system/test/unit/mock_mediaplayback_manager.js');
 requireApp('system/test/unit/mock_places.js');
 requireApp('system/test/unit/mock_screen_manager.js');
 requireApp('system/test/unit/mock_task_manager.js');
@@ -64,7 +62,6 @@ mocha.globals([
   'layoutManager',
   'lockScreenWindowManager',
   'mediaRecording',
-  'mediaPlaybackManager',
   'permissionManager',
   'places',
   'remoteDebugger',
@@ -87,7 +84,6 @@ var mocksForBootstrap = new MocksHelper([
   'Applications',
   'IccHelper',
   'ScreenManager',
-  'MediaPlaybackManager',
   'Places',
   'SettingsListener',
   'SettingsURL',
