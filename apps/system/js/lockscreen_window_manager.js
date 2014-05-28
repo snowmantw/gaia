@@ -175,11 +175,17 @@
           break;
         case 'lockscreen-appopened':
           app = evt.detail;
+
           // When the window restart itself after crashed,
           // it would fire open event without created,
           // so we need to register it again in this handler.
           if (!this.states.instance) {
             this.registerApp(app);
+          }
+          else {
+            // Animation controller would not resize it,
+            // so we need resize it here.
+            this.states.instance.resize();
           }
           break;
         case 'screenchange':
