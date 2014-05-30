@@ -8,7 +8,8 @@ marionette('notification tests', function() {
   var LOCKSCREEN_ORIGIN = 'app://lockscreen.gaiamobile.org';
   var client = marionette.client({
     settings: {
-      'ftu.manifestURL': null
+      'ftu.manifestURL': null,
+      'lockscreen.enabled': true
     }
   });
   var notificationList = new NotificationList(client);
