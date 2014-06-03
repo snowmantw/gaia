@@ -248,7 +248,8 @@ class GaiaData(object):
 
     @property
     def is_wifi_enabled(self):
-        return self.marionette.execute_script("return window.navigator.mozWifiManager.enabled;")
+        return self.marionette.execute_script("return window.navigator.mozWifiManager && "
+                                              "window.navigator.mozWifiManager.enabled;")
 
     def enable_wifi(self):
         self.marionette.switch_to_frame()
@@ -612,7 +613,7 @@ class GaiaDevice(object):
     @property
     def is_locked(self):
         self.marionette.switch_to_frame()
-        return self.marionette.execute_script('return window.wrappedJSObject.lockScreen.locked')
+        return self.marionette.execute_script('return window.wrappedJSObject.System.locked')
 
     def lock(self):
         self.marionette.import_script(self.lockscreen_atom)

@@ -1,6 +1,4 @@
 'use strict';
-mocha.globals(['SIMSlotManager', 'SIMSlot']);
-
 requireApp('system/js/mock_simslot.js');
 requireApp('system/test/unit/mock_icc_manager.js');
 requireApp('system/test/unit/mock_system.js');
@@ -19,7 +17,7 @@ suite('SIMSlotManager', function() {
   setup(function(callback) {
     navigator.mozIccManager = MockIccManager;
     navigator.mozMobileConnections = MockNavigatorMozMobileConnections;
-    requireApp('system/js/simslot_manager.js', callback);
+    requireApp('system/shared/js/simslot_manager.js', callback);
   });
 
   teardown(function() {

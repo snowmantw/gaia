@@ -1,7 +1,5 @@
 'use strict';
 
-mocha.globals(['SIMSlot']);
-
 suite('SIMSlot', function() {
   suiteSetup(function() {
   });
@@ -10,7 +8,7 @@ suite('SIMSlot', function() {
   });
 
   setup(function(callback) {
-    requireApp('system/js/simslot.js', callback);
+    requireApp('system/shared/js/simslot.js', callback);
   });
 
   teardown(function() {

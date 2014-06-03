@@ -39,13 +39,10 @@ marionette('check root panel settings', function() {
         return rootPanel.firefoxAccountDesc === 'Create account or sign in';
       });
       client.waitFor(function() {
-        return rootPanel.screenLockDesc === 'Enabled';
+        return rootPanel.screenLockDesc === 'Disabled';
       });
       client.waitFor(function() {
         return rootPanel.WiFiDesc === 'Disabled';
-      });
-      client.waitFor(function() {
-        return rootPanel.bluetoothDesc === 'Turned off';
       });
       client.waitFor(function() {
         return hasNumbers(rootPanel.applicationStorageDesc);

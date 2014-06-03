@@ -360,7 +360,7 @@ GAIA_APP_CONFIG := /tmp/gaia-apps-temp.list
 $(warning GAIA_APP_SRCDIRS is deprecated, please use GAIA_APP_CONFIG)
 endif
 
-GAIA_ALLAPPDIRS=$(shell find $(GAIA_DIR)/apps $(GAIA_DIR)/dev_apps -maxdepth 1 -mindepth 1 -type d)
+GAIA_ALLAPPDIRS=$(shell find $(GAIA_DIR)$(SEP)apps $(GAIA_DIR)$(SEP)dev_apps -maxdepth 1 -mindepth 1 -type d  | sed 's@[/\\]@$(SEP_FOR_SED)@g')
 
 GAIA_APPDIRS=$(shell while read LINE; do \
 	if [ "$${LINE\#$${LINE%?}}" = "*" ]; then \

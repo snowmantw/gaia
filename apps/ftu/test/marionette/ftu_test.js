@@ -22,10 +22,12 @@ marionette('First Time Use >', function() {
   };
 
   test('FTU comes up on profile generation', function() {
+    client.apps.launch(FTU);
     client.apps.switchToApp(FTU);
   });
 
   test('FTU click thru', function() {
+    client.apps.launch(FTU);
     client.apps.switchToApp(FTU);
     clickThruPanel('#languages', '#forward');
     clickThruPanel('#wifi', '#forward');
@@ -39,6 +41,7 @@ marionette('First Time Use >', function() {
   });
 
   test('FTU Wifi Scanning Tests', function() {
+    client.apps.launch(FTU);
     client.apps.switchToApp(FTU);
     clickThruPanel('#languages', '#forward');
     clickThruPanel('#wifi', '#forward');

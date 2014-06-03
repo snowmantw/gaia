@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-/* globals dump, lockScreen, CustomEvent, MozActivity, MozNDEFRecord,
+/* globals dump, CustomEvent, MozActivity, MozNDEFRecord,
    NfcHandoverManager, NfcUtils, NDEF, ScreenManager */
 'use strict';
 
@@ -65,7 +65,7 @@ var NfcManager = {
     var self = this;
     window.SettingsListener.observe('nfc.enabled', false, function(enabled) {
       var state = enabled ?
-                    (lockScreen.locked ?
+                    (window.System.locked ?
                        self.NFC_HW_STATE_DISABLE_DISCOVERY :
                        self.NFC_HW_STATE_ON) :
                     self.NFC_HW_STATE_OFF;
@@ -75,7 +75,7 @@ var NfcManager = {
 
   isScreenUnlockAndEnabled: function nm_isScreenUnlockAndEnabled() {
     // Policy:
-    if (ScreenManager.screenEnabled && lockScreen && !lockScreen.locked) {
+    if (ScreenManager.screenEnabled && !window.System.locked) {
       return true;
     } else {
       return false;
@@ -454,17 +454,17 @@ var NfcManager = {
 
   formatTextRecord: function nm_formatTextRecord(record) {
     var status = record.payload[0];
-    var languageLength = status & NDEF.RTD_TEXT_IANA_LENGTH;
+    var langLen = status & NDEF.RTD_TEXT_IANA_LENGTH;
     var language = NfcUtils.toUTF8(
-                     record.payload.subarray(1, languageLength + 1));
-    var encoding = status & NDEF.RTD_TEXT_ENCODING;
+                     record.payload.subarray(1, langLen + 1));
+    var encoding = (status & NDEF.RTD_TEXT_ENCODING) !== 0 ? 1 : 0;
     var text;
     var encodingString;
-    if (encoding == NDEF.RTD_TEXT_UTF8) {
-      text = NfcUtils.toUTF8(record.payload.subarray(languageLength + 1));
+    if (encoding === NDEF.RTD_TEXT_UTF8) {
+      text = NfcUtils.toUTF8(record.payload.subarray(langLen + 1));
       encodingString = 'UTF-8';
-    } else if (encoding == NDEF.RTD_TEXT_UTF16) {
-      text = NfcUtils.toUTF16(record.payload.subarray(languageLength + 2));
+    } else if (encoding === NDEF.RTD_TEXT_UTF16) {
+      text = NfcUtils.UTF16BytesToString(record.payload.subarray(langLen + 1));
       encodingString = 'UTF-16';
     }
 
@@ -477,53 +477,44 @@ var NfcManager = {
   },
 
   formatURIRecord: function nm_formatURIRecord(record) {
-    this._debug('XXXX Handle Ndef URI type');
-    var options = null;
     var prefix = NDEF.URIS[record.payload[0]];
-    if (!prefix) {
+    if (prefix === undefined) {
+      this._debug('Handle NDEF URI: identifier not known.');
       return null;
     }
 
-    switch (prefix) {
-      case 'tel:':
-        var number = NfcUtils.toUTF8(record.payload.subarray(1));
-        this._debug('Handle Ndef URI type, TEL');
-        options = {
-          name: 'dial',
-          data: {
-            type: 'webtelephony/number',
-            number: number,
-            uri: prefix + number
-          }
-        };
-        break;
-      case 'mailto:':
-        var emailAddress = NfcUtils.toUTF8(record.payload.subarray(1));
-        this._debug('Handle NDEF URI type "mailto:"');
-        options = {
-          name: 'new',
-          data: {
-            type: 'mail',
-            url: 'mailto:' + emailAddress
-          }
-        };
-        break;
-      case 'http://www.':
-      case 'https://www.': // Fall through.
-      case 'http://':
-      case 'https://':
-        this._debug('Handle Ndef URI type, Http(s)');
-        options = this.createActivityOptionsWithType('url');
-        options.data.rtd = record.type;
-        options.data.url = prefix +
-                           NfcUtils.toUTF8(record.payload.subarray(1));
-        break;
-      default:
-        options = this.createActivityOptionsWithType('uri');
-        options.data.rtd = record.type;
-        options.data.uri = prefix +
-                           NfcUtils.toUTF8(record.payload.subarray(1));
-        break;
+    var options,
+        suffix = NfcUtils.toUTF8(record.payload.subarray(1)),
+        uri = prefix + suffix;
+
+    this._debug('Handle NDEF URI: ' + uri);
+
+    if (uri.indexOf('tel:') === 0) {
+      options = {
+        name: 'dial',
+        data: {
+          type: 'webtelephony/number',
+          number: suffix,
+          uri: uri
+        }
+      };
+    } else if (uri.indexOf('mailto:') === 0) {
+      options = {
+        name: 'new',
+        data: {
+          type: 'mail',
+          url: uri
+        }
+      };
+    } else if (uri.indexOf('http://') === 0 ||
+               uri.indexOf('https://') === 0) {
+      options = this.createActivityOptionsWithType('url');
+      options.data.rtd = record.type;
+      options.data.url = uri;
+    } else {
+      options = this.createActivityOptionsWithType('uri');
+      options.data.rtd = record.type;
+      options.data.uri = uri;
     }
 
     return options;
