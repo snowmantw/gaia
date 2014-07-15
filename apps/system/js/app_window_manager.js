@@ -466,6 +466,13 @@
               }
             }
           }
+          // If we need to invoke activity after we show the window.
+          if (evt.detail && evt.detail.activity) {
+            var a = new window.MozActivity(evt.detail.activity);
+            a.onerror = function ls_activityError() {
+              console.log('MozActivity: camera launch error.');
+            };
+          }
           break;
 
         case 'overlaystart':
