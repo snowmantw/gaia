@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <script src="source.js"></script>
+  <script defer>
+    var itr = (function*(){
+      while (1) {
+        yield (Date.now());
+      }
+    })();
+    iterator = Source.iterator(itr);
+    array = Source.array([1,2,3,4,5]);
+    events = Source.events([
+      { type: 'foo'},
+      { type: 'click', target: document.body }
+      ]);
+    collectorIterator = function(item) {
+      console.log('>> iterator: ', item);
+    };
+    collectorArray = function(item) {
+      console.log('>> array: ', item);
+    };
+    collectorEvent = function(item) {
+      console.log('>> event: ', item);
+    };
+    terminator = function() {
+      console.log('|| terminator called');
+    };
+
+    // iterator.collector(collectorIterator);
+    // array.collector(collectorArray, terminator);
+    // events.collector(collectorEvent);
+  </script>
+</head>
+<body>
+</body>
+</html>
