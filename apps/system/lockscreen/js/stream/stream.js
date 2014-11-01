@@ -9,17 +9,43 @@
   var Stream = function() {
     this.sources = [];
     this.observers = [];
-    this.reducer = null;
-    this.reducingDone = null;
-    this.accumulatedValue = null;
+    this.reducer =
+    this.reducingDone =
+    this.accumulatedValue =
+    this.startResolver = null;
+    this.startPromise = new Promise((resolve) => {
+      this.startResolver = resolve;
+    });
+  };
+
+  /**
+   * This stream would start to work only after start it.
+   * Must set sources before this step, and they would start
+   * to feed this stream after we start it.
+   */
+  Stream.prototype.start = function(startWith) {
+    this.notify(startWith);
+    this.startResolver();
+    return this;
   };
 
   /**
    * Register a source to continue the Stream.
    */
   Stream.prototype.source = function(source) {
-    this.sources.push(source.collector(
-      this.notify.bind(this)));
+    // It's OK to call this function multiple times, which is equal to:
+    //
+    //  somePromise.then();
+    //  somePromise.then();
+    //  somePromise.then();
+    //
+    // And these then would execute at the same time. Since we're preparing
+    // the sources, so the order is not important.
+    this.startPromise.then(() => {
+      this.sources.push(source.collector(
+        this.notify.bind(this),
+        this.close.bind(this)));
+    });
     return this;
   };
 

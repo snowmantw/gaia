@@ -21,7 +21,7 @@
     this.iterator =
     this.events =
     this.settings =
-    this.timers = null;
+    this.timer = null;  // timer: { id: ID, times: times }
 
     // We need to use setInterval trick for infinite iterator.
     // See: 'Source.interator'
@@ -53,7 +53,7 @@
 
   /**
    * A specialized version of 'Source.iterator', which avoids the 'setInterval'
-   * trick, since an array is always finite, so we can use only the plain loop.
+   * trick, since an array is always finite, so we can use the plain loop.
    */
   Source.array = function(array) {
     var source = new Source();
@@ -106,11 +106,39 @@
   };
 
   /**
+   * Set since timeout or interval timer.
+   * The generator is for generating some value while time is up.
+   * If there is no 'times' then it's a permanent interval timer.
+   */
+  Source.timer = function(timeout, generator, times) {
+    var source = new Source();
+    source.promisedCollector.then(() => {
+      var timerfunction = () => {
+        if (times && 0 === source.timer.times) {
+          window.clearInterval(source.timer.id);
+          // clean the timer and close the source.
+          source.terminator();
+          return;
+        } else if (times) {
+          source.timer.times --;
+        }
+        source.emit(generator());
+      };
+      source.timer = {
+        id: setInterval(timerfunction, timeout),
+        times: times
+      };
+    });
+    return source;
+  };
+
+  /**
    * Set the stream in entry to let source emit the new value.
    * The first argument is the method to collect emitted item,
    * and the second one is the method to signal the end of emitting.
    */
-  Source.prototype.collector = function(collector, terminator) {
+  Source.prototype.collector =
+  function(collector, terminator = function() {}) {
     this.collector = collector;
     this.collectorResolver(collector);
     this.terminator = terminator;

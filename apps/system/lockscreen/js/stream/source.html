@@ -10,12 +10,16 @@
         yield (Date.now());
       }
     })();
+    var timegenerator = function() {
+      return Date.now();
+    };
     iterator = Source.iterator(itr);
     array = Source.array([1,2,3,4,5]);
     events = Source.events([
       { type: 'foo'},
       { type: 'click', target: document.body }
       ]);
+    timer = Source.timer(500, timegenerator, 15);
     collectorIterator = function(item) {
       console.log('>> iterator: ', item);
     };
@@ -25,6 +29,9 @@
     collectorEvent = function(item) {
       console.log('>> event: ', item);
     };
+    collectorTimer = function(item) {
+      console.log('>> time: ', item);
+    };
     terminator = function() {
       console.log('|| terminator called');
     };
@@ -32,6 +39,7 @@
     // iterator.collector(collectorIterator);
     // array.collector(collectorArray, terminator);
     // events.collector(collectorEvent);
+    // timer.collector(collectorTimer, terminator);
   </script>
 </head>
 <body>
