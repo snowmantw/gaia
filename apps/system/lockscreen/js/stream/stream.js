@@ -23,26 +23,39 @@
    * mapper:: a -> b
    */
   Stream.prototype.map = function(mapper) {
-   return this.reduce((acc, newval) => {
-     return acc.notify(mapper(newval));
-   }, new Stream());
+    var newStream = new Stream();
+    this.reduce((acc, newval) => {
+      return acc.notify(mapper(newval));
+    }, newStream)
+    .then(function() {
+      // If parent stream closed, close the child, too.
+      newStream.close();
+    }).catch(console.error.bind(console));
+    return newStream;
   };
 
   /**
    * pred:: a -> bool
    */
   Stream.prototype.filter = function(pred) {
-    return this.reduce((acc, newval) => {
+    var newStream = new Stream();
+    this.reduce((acc, newval) => {
       if (pred(newval)) {
         return acc.notify(newval);
       }
-    }, new Stream());
+    }, newStream)
+    .then(function() {
+      // If parent stream closed, close the child, too.
+      newStream.close();
+    }).catch(console.error.bind(console));
+    return newStream;
   };
 
   /**
    * Flat every Stream elements within arrays.
    */
   Stream.prototype.flat = function() {
+    var newStream = new Stream();
     // Must recursively do this.
     // Result would be the flatArray.
     var doFlat = (flatArray, value) => {
@@ -55,11 +68,16 @@
       }
     };
 
-    return this.reduce((acc, newval) => {
+    this.reduce((acc, newval) => {
       var result = [];
       doFlat(result, newval);
       return acc.notify(result);
-    }, new Stream());
+    }, newStream)
+    .then(function() {
+      // If parent stream closed, close the child, too.
+      newStream.close();
+    }).catch(console.error.bind(console));
+    return newStream;
   };
 
   /**
@@ -67,6 +85,9 @@
    * It would generate tuples of two Streams' elements as
    * new Stream's values (since we're in JavaScript, we can
    * only use Array(2) instread of real tuple).
+   *
+   * If any of these two Streams get closed, the new
+   * Stream would get closed, too.
    */
   Stream.prototype.and = function(stream) {
     var newStream = new Stream();
@@ -86,27 +107,54 @@
           values: []
         };
       });
-    }, null);
+    }, null).then(function() {
+      newStream.close();
+    }).catch(console.error.bind(console));
 
     stream.reduce((acc1, newval1) => {
       resolverRef.values[1] = newval1;
       resolverRef.resolve();
-    }, null);
+    }, null).then(function() {
+      newStream.close();
+    }).catch(console.error.bind(console));
     return newStream;
   };
 
+  /**
+   * Since we don't really have parallel streams,
+   * there would be only one element in the OR array element of the stream.
+   * This makes it as an Either Stream, actually.
+   *
+   * Note: if both Stream get closed, the new Stream would get closed, too.
+   */
   Stream.prototype.or = function(stream) {
-    // Since we don't really have parallel streams,
-    // there would be only one element in the OR array element of the stream.
-    // This makes it as an Either Stream, actually.
+    var anotherStreamClosed = false;
     var newStream = new Stream();
     stream.reduce((acc, newval) => {
       return acc.notify(newval);
-    }, newStream);
+    }, newStream)
+    .then(function() {
+      if (anotherStreamClosed) {
+        newStream.close();
+      } else {
+        anotherStreamClosed = true;
+      }
+    })
+    .catch(console.error.bind(console));
 
     this.reduce((acc, newval) => {
       return acc.notify(newval);
-    }, newStream);
+    }, newStream)
+    .then(function() {
+      if (anotherStreamClosed) {
+        newStream.close();
+      } else {
+        anotherStreamClosed = true;
+      }
+    })
+    .catch(console.error.bind(console));
+
+    return newStream;
   };
 
   exports.Stream = Stream;

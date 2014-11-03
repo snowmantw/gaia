@@ -17,7 +17,8 @@
     this.reducer =
     this.reducingDone =
     this.accumulatedValue = null;
-    this.isdone = false;
+    this.isdone =
+    this.isclosed = false;
     this.doneResolver = null;
     this.donePromise = new Promise((resolve) => {
       this.doneResolver = resolve;
@@ -97,7 +98,7 @@
    * call the close.
    */
   BasicStream.prototype.close = function() {
-    if (null !== this.reducingDone) {
+    if (null !== this.reducingDone && !this.isclosed) {
       this.reducingDone(this.accumulatedValue);
     }
     return this;

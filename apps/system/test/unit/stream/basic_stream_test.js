@@ -3,10 +3,7 @@
 /* global BasicStream */
 
 requireApp('system/lockscreen/js/stream/basic_stream.js');
-requireApp('System/LockScreen/Stream', function() {
-});
-
-suite('system/LockScreen >', function() {
+suite('system/LockScreen/BasicStream >', function() {
   var subject;
   setup(function() {
     subject = new BasicStream();
