@@ -16,6 +16,10 @@
 (function(exports) {
   var Stream = function() {
     BasicStream.apply(this);
+    // A cache to avoid count the stream everytime we need a length.
+    // But please don't use it. Instread of, call 'length' method which
+    // would correctly never return when it's an infinite Stream.
+    this.lengthofstream = 0;
   };
   Stream.prototype = Object.create(BasicStream.prototype);
 
@@ -31,6 +35,8 @@
       // If parent stream closed, close the child, too.
       newStream.close();
     }).catch(console.error.bind(console));
+    // Ready to be notified.
+    newStream.done();
     return newStream;
   };
 
@@ -42,12 +48,16 @@
     this.reduce((acc, newval) => {
       if (pred(newval)) {
         return acc.notify(newval);
+      } else {
+        return acc;
       }
     }, newStream)
     .then(function() {
       // If parent stream closed, close the child, too.
       newStream.close();
     }).catch(console.error.bind(console));
+    // Ready to be notified.
+    newStream.done();
     return newStream;
   };
 
@@ -77,7 +87,37 @@
       // If parent stream closed, close the child, too.
       newStream.close();
     }).catch(console.error.bind(console));
+    // Ready to be notified.
+    newStream.done();
     return newStream;
+  };
+
+  /**
+   * For a finite Stream, get its length.
+   * Call this method for an infite Stream would never get result.
+   *
+   * Would return a Promise and wait the measure over to return the result.
+   */
+  Stream.prototype.length = function() {
+    // One reducing, one new Stream, it's the rule.
+    return this.reduce(() => {
+      return this.lengthofstream;
+    })
+    .catch(console.error.bind(console));
+  };
+
+  Stream.prototype.notify = function() {
+    // Wrap the original version for caching the length.
+    if (!this.isdone) {
+      return;
+    }
+    // Must count it before notifying, since the reducing
+    // would be executed following it, so if user waits the
+    // reducing result it would immedately get it before
+    // we add the length after the notifying step.
+    this.lengthofstream += 1;
+    BasicStream.prototype.notify.apply(this, arguments);
+    return this;
   };
 
   /**
@@ -92,31 +132,39 @@
   Stream.prototype.and = function(stream) {
     var newStream = new Stream();
     var resolverRef = {
-      resolve: null,
       values: []
     };
+    var restoreRef = function() {
+      resolverRef.values = [];
+    };
+
     this.reduce((acc0, newval0) => {
-      var promise = new Promise((resolve) => {
-        resolverRef.resolve = resolve;
-        resolverRef.values[0] = newval0;
-      });
-      promise.then(() => {
+      resolverRef.values[0] = newval0;
+      if ('undefined' !== typeof resolverRef.values[1]) {
         newStream.notify(resolverRef.values);
-        resolverRef = {
-          resolve: null,
-          values: []
-        };
-      });
-    }, null).then(function() {
+        restoreRef();
+      }
+    }, null)
+    .then(function() {
+      // If this stream get closed, close the new stream, too.
       newStream.close();
-    }).catch(console.error.bind(console));
+    })
+    .catch(console.error.bind(console));
 
     stream.reduce((acc1, newval1) => {
       resolverRef.values[1] = newval1;
-      resolverRef.resolve();
-    }, null).then(function() {
+      if ('undefined' !== typeof resolverRef.values[0]) {
+        newStream.notify(resolverRef.values);
+        restoreRef();
+      }
+    }, null)
+    .then(function() {
+      // If this stream get closed, close the new stream, too.
       newStream.close();
-    }).catch(console.error.bind(console));
+    })
+    .catch(console.error.bind(console));
+    // Ready to be notified.
+    newStream.done();
     return newStream;
   };
 
