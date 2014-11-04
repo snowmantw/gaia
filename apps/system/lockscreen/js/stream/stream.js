@@ -36,7 +36,7 @@
       newStream.close();
     }).catch(console.error.bind(console));
     // Ready to be notified.
-    newStream.done();
+    newStream.ready();
     return newStream;
   };
 
@@ -57,7 +57,7 @@
       newStream.close();
     }).catch(console.error.bind(console));
     // Ready to be notified.
-    newStream.done();
+    newStream.ready();
     return newStream;
   };
 
@@ -88,7 +88,7 @@
       newStream.close();
     }).catch(console.error.bind(console));
     // Ready to be notified.
-    newStream.done();
+    newStream.ready();
     return newStream;
   };
 
@@ -108,7 +108,8 @@
 
   Stream.prototype.notify = function() {
     // Wrap the original version for caching the length.
-    if (!this.isdone) {
+    if (!this.isready) {
+      console.warn('try to notify an unready Stream');
       return this;
     }
     // Must count it before notifying, since the reducing
@@ -164,7 +165,7 @@
     })
     .catch(console.error.bind(console));
     // Ready to be notified.
-    newStream.done();
+    newStream.ready();
     return newStream;
   };
 
@@ -202,7 +203,7 @@
     })
     .catch(console.error.bind(console));
     // Ready to be notified.
-    newStream.done();
+    newStream.ready();
 
     return newStream;
   };

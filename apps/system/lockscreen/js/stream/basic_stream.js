@@ -17,10 +17,10 @@
     this.reducer =
     this.reducingDone =
     this.accumulatedValue = null;
-    this.isdone = false;
-    this.doneResolver = null;
-    this.donePromise = new Promise((resolve) => {
-      this.doneResolver = resolve;
+    this.isready = false;
+    this.readyResolver = null;
+    this.readyPromise = new Promise((resolve) => {
+      this.readyResolver = resolve;
     });
   };
 
@@ -30,7 +30,7 @@
    * to feed this stream after we start it.
    */
   BasicStream.prototype.start = function(startWith) {
-    this.donePromise.then(
+    this.readyPromise.then(
       this.notify.bind(this, startWith)
     );
     return this;
@@ -48,7 +48,7 @@
     //
     // And these then would execute at the same time. Since we're preparing
     // the sources, so the order is not important.
-    this.donePromise.then(() => {
+    this.readyPromise.then(() => {
       this.sources.push(source.collector(
         this.notify.bind(this),
         this.close.bind(this)));
@@ -108,15 +108,15 @@
    * It would return the promise to do some postmortem check,
    * especially for test.
    */
-  BasicStream.prototype.done = function() {
-    this.isdone = true;
-    this.doneResolver();
-    return this.donePromise;
+  BasicStream.prototype.ready = function() {
+    this.isready = true;
+    this.readyResolver();
+    return this.readyPromise;
   };
 
   BasicStream.prototype.notify = function(value) {
     // If this Stream is not set up yet, do nothing
-    if (!this.isdone) {
+    if (!this.isready) {
       return this;
     }
     // If there is a reducing continues:

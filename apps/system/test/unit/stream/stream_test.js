@@ -19,7 +19,7 @@ suite('system/lockscreen/Stream >', function() {
       .then(done).catch(done);
 
       // Ready for notifying it.
-      subject.done();
+      subject.ready();
       for (var i = 0; i < 5; i++) {
         subject.notify(i);
       }
@@ -41,7 +41,7 @@ suite('system/lockscreen/Stream >', function() {
 
       // Start to notify.
       subject
-        .done()
+        .ready()
         .then(function() {
           for (var i = 0; i < 5; i++) {
             subject.notify(i);
@@ -71,7 +71,7 @@ suite('system/lockscreen/Stream >', function() {
 
       // Start to notify.
       subject
-        .done()
+        .ready()
         .then(function() {
           for (var i = -3; i < 4; i++) {
             subject.notify(i);
@@ -96,7 +96,7 @@ suite('system/lockscreen/Stream >', function() {
 
       // Start to notify.
       subject
-        .done()
+        .ready()
         .then(function() {
           for (var i = 0; i < 5; i ++) {
             subject.notify([[[i], i+1, i+2], i+3, [1+4, i+5]]);
@@ -128,7 +128,7 @@ suite('system/lockscreen/Stream >', function() {
         .catch(done);
 
       // Now trigger the notifying to do the test.
-      stream1.done().then(function() {
+      stream1.ready().then(function() {
         for (var i = 0; i < 5; i ++) {
           stream1.notify(i);
         }
@@ -136,7 +136,7 @@ suite('system/lockscreen/Stream >', function() {
       .catch(done);
 
       stream2
-        .done()
+        .ready()
         .then(function() {
           for (var i = 4; i >= 0; i --) {
             stream2.notify(i);
@@ -175,7 +175,7 @@ suite('system/lockscreen/Stream >', function() {
         .catch(done);
 
       // Now trigger the notifying to do the test.
-      stream1.done().then(function() {
+      stream1.ready().then(function() {
         for (var i = -4; i < 0; i ++) {
           stream1.notify(i);
         }
@@ -183,7 +183,7 @@ suite('system/lockscreen/Stream >', function() {
       .catch(done);
 
       stream2
-        .done()
+        .ready()
         .then(function() {
           for (var i = 4; i > 0; i --) {
             stream2.notify(i);
