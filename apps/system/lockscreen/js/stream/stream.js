@@ -109,7 +109,7 @@
   Stream.prototype.notify = function() {
     // Wrap the original version for caching the length.
     if (!this.isdone) {
-      return;
+      return this;
     }
     // Must count it before notifying, since the reducing
     // would be executed following it, so if user waits the
@@ -201,6 +201,8 @@
       }
     })
     .catch(console.error.bind(console));
+    // Ready to be notified.
+    newStream.done();
 
     return newStream;
   };

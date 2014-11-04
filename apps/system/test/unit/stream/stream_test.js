@@ -127,6 +127,7 @@ suite('system/lockscreen/Stream >', function() {
         .then(done)
         .catch(done);
 
+      // Now trigger the notifying to do the test.
       stream1.done().then(function() {
         for (var i = 0; i < 5; i ++) {
           stream1.notify(i);
@@ -142,7 +143,52 @@ suite('system/lockscreen/Stream >', function() {
           }
           // Need to close it to get reducing result.
           // 'and' need only close one stream to perform the reducing,
-          // but we still close them all.
+          // but for test we still close them all.
+          stream2.close();
+          stream1.close();
+        })
+        .catch(done);
+    });
+  });
+
+  suite('or', function() {
+    var stream1, stream2;
+    setup(function() {
+      stream1 = new Stream();
+      stream2 = new Stream();
+    });
+    test('it would merge two streams into one new Either stream.',
+    function(done) {
+      stream2
+        .or(stream1)
+        .reduce(function(acc, newval) {
+          if (null === acc) {
+            acc = 0;
+          }
+          return acc + newval;
+        }, null)
+        .then(function(result) {
+          assert.equal(result, 0,
+            'the values from these two streams are not correct.');
+        })
+        .then(done)
+        .catch(done);
+
+      // Now trigger the notifying to do the test.
+      stream1.done().then(function() {
+        for (var i = -4; i < 0; i ++) {
+          stream1.notify(i);
+        }
+      })
+      .catch(done);
+
+      stream2
+        .done()
+        .then(function() {
+          for (var i = 4; i > 0; i --) {
+            stream2.notify(i);
+          }
+          // Need to close them to get reducing result.
           stream2.close();
           stream1.close();
         })
