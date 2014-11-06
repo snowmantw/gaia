@@ -22,6 +22,7 @@
     this.readyPromise = new Promise((resolve) => {
       this.readyResolver = resolve;
     });
+    this.closedsources = 0;
   };
 
   /**
@@ -51,7 +52,14 @@
     this.readyPromise.then(() => {
       this.sources.push(source.collector(
         this.notify.bind(this),
-        this.close.bind(this)));
+        () => { // The terminator.
+          this.closedsources ++;
+          // Close this stream when it's all sources get closed.
+          if (this.sources.length === this.closedsources) {
+            this.close();
+            this.closedsources = 0;
+          }
+        }));
     });
     return this;
   };

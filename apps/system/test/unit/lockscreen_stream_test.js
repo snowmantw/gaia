@@ -1,104 +1,104 @@
 'use strict';
-
 /* global LockScreenStream */
 
 requireApp('system/lockscreen/js/stream/basic_stream.js');
 requireApp('system/lockscreen/js/stream/stream.js');
 requireApp('system/lockscreen/js/lockscreen_stream.js');
-suite('system/LockScreen/LockScreenStream >', function() {
-  var instance;
+suite('system/lockscreen/Stream >', function() {
   var subject;
   var collectors;
   setup(function() {
-    delete LockScreenStream.instance;
     collectors = {
       events: null,
-      settings: null,
-      bridge: null
+      settings: null
     };
     window.Source = {
       events: function() {
         return {
-          collector: function(collector) {
+          collector: function(collector, terminator) {
             collectors.events = collector;
-         }
+          }
         };
       },
-      settings: function() {
+      settings: function(collector, terminator) {
         return {
-          collector: function(collector) {
+          collector: function(collector, terminator) {
             collectors.settings = collector;
           }
         };
       },
-      bridge: function(outsource) {
-        outsource.emitter((item) => {
-          subject.notify(item);
-        });
+      bridge: function() {
+        return {
+          collector: function(collector, terminator) {
+            collectors.settings = collector;
+          }
+        };
       }
     };
-    instance = new LockScreenStream();
-    // Get the stream 'instance'.
-    subject = instance.instance();
+    subject = new LockScreenStream();
   });
 
-  suite('instance and stream source works', function() {
-    var mockEvent = {
-      'type': 'foo'
-    };
-    var mockSettingChange = {
-      'settingName': 'barName',
-      'settingValue': 'barValue'
-    };
-    var mockStateFrom = {
-      'type': 'fromState'
-    };
-    var mockStateTo = {
-      'type': 'toState'
-    };
-    test('event & setting changes', function(done) {
-      var gotevent = false;
-      var gotsettingchange = false;
-      subject.reduce(function(acc, newval) {
-        if (newval.type && 'foo' === newval.type) {
-          gotevent = true;
-        } else if (
-          'barName' === newval.settingName &&
-          'barValue' === newval.settingValue) {
-          gotsettingchange = true;
-        }
-      }).then(function() {
-        assert.isTrue(gotevent,
-          'no event from event source');
-        assert.isTrue(gotsettingchange,
-          'no setting change from setting source');
-      })
-      .then(done)
-      .catch(done);
+  suite('events & settings', function() {
+    test('would receive events & settings', function(done) {
+      var hasEvent = false;
+      var hasSetting = false;
+      subject
+        .setup()
+        .reduce(function(acc, newval) {
+          if (newval.type && 'foo' === newval.type) {
+            hasEvent = true;
+          }
+          if (newval.settingName && 'barname' === newval.settingName) {
+            hasSetting = true;
+          }
+        })
+        .then(function() {
+          assert.isTrue(hasEvent,
+            'did\'t receive events as element of the stream');
+          assert.isTrue(hasSetting,
+            'did\'t receive settings as element of the stream');
+        })
+        .then(done).catch(done);
 
-      collectors.events(mockEvent);
-      collectors.settings(mockSettingChange);
-      // Need to close the stream to end the reducing.
-      subject.close();
+        subject.stream.readyPromise.then(function() {
+          collectors.events({
+            'type': 'foo'
+          });
+          collectors.settings({
+            'settingName': 'barname',
+            'settingValue': 'barvalue'
+          });
+          subject.stream.close();
+        });
     });
+  });
 
-    test('from the transfer method', function(done) {
-      var gottransferring = false;
-      subject.reduce(function(acc, newval) {
-        if ('fromState' === newval.from.type &&
-            'toState' === newval.to.type) {
-          gottransferring = true;
-        }
-      }).then(function() {
-        assert.isTrue(gottransferring,
-          'no event from event source');
-      })
-      .then(done)
-      .catch(done);
-    console.log('|| << >> ', typeof instance.emitter);
-      instance.transfer(mockStateFrom, mockStateTo);
-      // Need to close the stream to end the reducing.
-      subject.close();
+  suite('state transferring', function() {
+    test('would receive state transferring', function(done) {
+      var hasStateTransferring = false;
+      subject
+        .setup()
+        .reduce(function(acc, newval) {
+          if (newval.fromState && newval.fromState.type === 'fromState' &&
+              newval.toState && newval.toState.type === 'toState') {
+            hasStateTransferring = true;
+          }
+        })
+        .then(function() {
+          assert.isTrue(hasStateTransferring,
+            'did\'t receive state transferring as element of the stream');
+        })
+        .then(done).catch(done);
+
+        subject.stream.readyPromise.then(function() {
+          subject.emitter = subject.stream.notify.bind(subject.stream);
+          subject.transfer({
+            'type': 'fromState'
+          }, {
+            'type': 'toState'
+          });
+        subject.stream.close();
+        });
     });
   });
 });

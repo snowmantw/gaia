@@ -133,6 +133,27 @@
   };
 
   /**
+   * Bridge arbitrary 'source' which would call this source's emit
+   * function to emit value. The method would embed the emitting function
+   * to the 'source' to delegate it, and the 'outsource' 
+   *
+   * This method can also be used to concat another Source instance,
+   * although this may be meaningless. Anyway, the 'outsource' should
+   * implement the 'emitter' setter, which would receive this instance's
+   * emit method.
+   */
+  Source.bridge = function(outsource) {
+    var source = new Source();
+    outsource.emitter(source.emit.bind(this));
+    return source;
+  };
+
+  Source.prototype.emitter = function(emitter) {
+    this.outemitter = emitter;
+    return this;
+  };
+
+  /**
    * Set the stream in entry to let source emit the new value.
    * The first argument is the method to collect emitted item,
    * and the second one is the method to signal the end of emitting.
@@ -151,7 +172,11 @@
    */
   Source.prototype.handleEvent =
   Source.prototype.emit = function(item) {
-    this.collector(item);
+    if (this.outemitter) {
+      this.outemitter(item);
+    } else {
+      this.collector(item);
+    }
   };
 
   exports.Source = Source;
