@@ -1,5 +1,4 @@
  'use strict';
- /* global StreamSourceComparator */
 
 /**
  * The input collector to queue, analyze and forward on demand with nicer
@@ -17,36 +16,26 @@
       properties: null
     };
 
-    this.comparators = {
-      events: [],
-      settings: [],
-      properties: []
-    };
-
-    this.matched = {
-      events: false,
-      settings: false,
-      properties: false
-    };
-
     this.resolvers = {
       events: null,
       settings: null
     };
 
     this.states = {
-      comparingTarget: '',  // see comparing functions
       predResolve: null,
       predReject: null,
-      predPromise: null
+      predPromise: null,
+      // Whether the inputs are checked.
+      inputsChecked: {
+        events: false,
+        settings: false
+      }
     };
 
     this.inputs = {
       events: [],
       settings: []
     };
-
-    this.mixinComparingMethods();
 
     // Since settings observer API doesn't support pass a handler object in.
     this.handleSetting = this.handleSetting.bind(this);
@@ -66,7 +55,6 @@
       enames = set;
     }
     this.listens.events = enames;
-    this.comparingTarget = 'event';
     return this;
   };
 
@@ -84,7 +72,6 @@
       skeys = set;
     }
     this.listens.settings = skeys;
-    this.comparingTarget = 'setting';
     return this;
   };
 
@@ -100,12 +87,11 @@
       pkeys = set;
     }
     this.listens.properties = pkeys;
-    this.comparingTarget = 'property';
     return this;
   };
 
   /**
-   * After all inputs comes and pass the comparators,
+   * After all inputs comes and pass the ordering check,
    * a final prediction would to check if the following steps can be performed.
    *
    * The 'pred' function would receive three inputs: events, settings and
@@ -121,13 +107,7 @@
    * { success: Bool, inputs: the inputs it received }
    */
   StreamSource.prototype.predict = function(pred) {
-    var result =
-      pred(this.inputs.events, this.inputs.settings, this.properties);
-    if (result.success) {
-      this.predResolve(result);
-    } else {
-      this.predReject(result);
-    }
+    this.prediction = pred;
     return this;
   };
 
@@ -153,11 +133,33 @@
   };
 
   StreamSource.prototype.handleEvent = function(evt) {
-    this.inputs.events.push(evt);
+    this.handleInput(evt, 'events');
   };
 
   StreamSource.prototype.handleSetting = function(evt) {
-    this.inputs.settings.push(evt);
+    this.handleInput(evt, 'settings');
+  };
+
+  StreamSource.prototype.handleInput = function(evt, type) {
+    var anotherInputType = (type === 'events') ? 'settings' : 'events';
+    var inputs = this.inputs[type];
+    inputs.push(evt);
+    // If another inputs is satisfied.
+    if (this.states.inputsChecked[anotherInputType]) {
+      this.states.inputsChecked[type] =
+        this.checkInputs(inputs, type);
+      // Then do predict and kick off the promise chain.
+      if (this.states.inputsChecked[type]) {
+        var predictionResult =
+          this.prediction(this.inputs.events,
+              this.inputs.settings, this.properties);
+        if (predictionResult.success) {
+          this.predResolve(predictionResult);
+        } else {
+          this.predReject(predictionResult);
+        }
+      }
+    }
   };
 
   /**
@@ -189,33 +191,6 @@
         return result && collection.has(input.name);
       }, false);
     }
-  };
-
-  /**
-   * When the comparing target can be one on one comparing,
-   * the matching result is true.
-   *
-   * We mixin the comparing methods to provide a facade.
-   * In fact, each comparing method corresponds one comparator,
-   * with different condition and different comparing method.
-   * The comparator would be invoked when we need to do the comparing,
-   * and return the result.
-   *
-   * The basic methods are like 'is', 'not' and 'has'.
-   */
-  StreamSource.prototype.mixinComparingMethods = function() {
-    Object
-      .keys(StreamSourceComparator.prototype)
-      .forEach(function(methodName) {
-        this[methodName] = function(condition) {
-          var comparator = new StreamSourceComparator(
-              this.states.comparingTarget,
-              condition,
-              methodName);
-          this.comparators[this.states.comparingTarget].push(comparator);
-          return this;
-        };
-      });
   };
 
   exports.StreamSource = StreamSource;
