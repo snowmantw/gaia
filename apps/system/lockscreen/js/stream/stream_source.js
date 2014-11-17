@@ -8,7 +8,7 @@
  * flags to wait them get satisfied in the uncertain future.
  **/
 (function(exports) {
-  var StreamSource = function() {
+  var StreamSource = function(properties) {
     // Listen to what changed/happend.
     this.listens = {
       events: null,
@@ -21,6 +21,7 @@
       settings: null
     };
 
+    this.prediction = null;
     this.states = {
       predResolve: null,
       predReject: null,
@@ -29,12 +30,13 @@
       inputsChecked: {
         events: false,
         settings: false
-      }
+      },
     };
 
     this.inputs = {
       events: [],
-      settings: []
+      settings: [],
+      properties: properties || {}
     };
 
     // Since settings observer API doesn't support pass a handler object in.
@@ -129,7 +131,23 @@
       this.predResolve = resolve;
       this.predReject = reject;
     });
+
+    // User omitted the detailed prediction.
+    if (!this.prediction) {
+      this.prediction = (events, settings, properties) => {
+        return true;
+      };
+    }
     return this.predPromise;
+  };
+
+  StreamSource.prototype.close = function() {
+    this.listens.events.forEach((ename) => {
+      window.removeEventListener(ename, this);
+    });
+    this.listens.settings.forEach((sname) => {
+      navigator.mozSettings.removeObserver(sname, this.handleSetting);
+    });
   };
 
   StreamSource.prototype.handleEvent = function(evt) {
@@ -141,20 +159,22 @@
   };
 
   StreamSource.prototype.handleInput = function(evt, type) {
+    // This is because we can't monitor properties.
+    // So we can only check if the object owns them.
     var anotherInputType = (type === 'events') ? 'settings' : 'events';
     var inputs = this.inputs[type];
     inputs.push(evt);
+    this.states.inputsChecked[type] =
+      this.checkInputs(inputs, type);
     // If another inputs is satisfied.
     if (this.states.inputsChecked[anotherInputType]) {
-      this.states.inputsChecked[type] =
-        this.checkInputs(inputs, type);
       // Then do predict and kick off the promise chain.
       if (this.states.inputsChecked[type]) {
         var predictionResult =
           this.prediction(this.inputs.events,
-              this.inputs.settings, this.properties);
-        if (predictionResult.success) {
-          this.predResolve(predictionResult);
+              this.inputs.settings, this.inputs.properties);
+        if (predictionResult) {
+          this.predResolve(this.inputs);
         } else {
           this.predReject(predictionResult);
         }
@@ -163,11 +183,27 @@
   };
 
   /**
+   * This is because we can't monitor properties.
+   * So we can only check if the object owns them.
+   */
+  StreamSource.checkProperties = function() {
+    var result = true;
+    this.listens.properties.forEach((key) => {
+      if ('undefined' === typeof this.inputs.properties[key] ||
+          null === typeof this.inputs.properties[key]) {
+        result = false;
+      }
+    });
+    return result;
+  };
+
+  /**
    * Return true if the inputs matches the listen targets.
    * If the listen target is a Set, order doesn't matter.
    * Otherwise, same inputs with different order is not true.
    */
   StreamSource.prototype.checkInputs = function(inputs, inputtype) {
+    var name;
     var collection = this.listens[inputtype];
     if (Array.isArray(collection)) {
       if (inputs.length !== collection.length) {
@@ -177,19 +213,21 @@
         if (!inputs[index]) {
           return false;
         }
-        var name = inputs[index].type ? inputs[index].type :
+        name = inputs[index].type ? inputs[index].type :
                    inputs[index].settingName;
         if (listenname !== name) {
           return false;
         } else {
           return result && true;
         }
-      }, false);
+      }, true);
     } else {
       // if collection is Set.
       return inputs.reduce((result, input) => {
-        return result && collection.has(input.name);
-      }, false);
+        name = input.type ? input.type :
+               input.settingName;
+        return result && collection.has(name);
+      }, true);
     }
   };
 
