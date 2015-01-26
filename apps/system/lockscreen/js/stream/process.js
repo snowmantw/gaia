@@ -31,17 +31,43 @@
 
   /**
    * Can arbitrarily shift from a phase to another.
+   * The 'newBeginning' denotes to the first step of the new phase.
+   * Consinder following state of the queue:
+   *
+   * Qstart = { [ delay 60 secs promise: ETA = 60 ] [ step ] }
+   *
+   * If we shift the queue with phase 'start' to 'stop', we would get
+   *
+   * Qstop  = { [ delay 60 secs promise: ETA = 49 ] [ step ] }
+   *
+   * And the user could arrange new step at this queue:
+   *
+   * Qstop  = { [ delay 60 secs promise: ETA = 48 ] [ step ] | [ new step ] }
+   *
+   * However, since the previous delay promise still waiting to be resolved,
+   * the 'new step', even though it's arranged *after* the phase got shifted,
+   * it still need to wait the delay promise get resolved. To solve this,
+   * we need to explicitly tell the process the step is actually the
+   * beginning of the new phase, and forcibly execute it explicitly to
+   * kick off the following chain of the new phase.
+   *
+   * (Note: we could hide it better in the 'next' method, and to check if
+   * the step currently arranged by the 'next' is a 'beginning' as this
+   * method does. However, since the 'next' method is too complicated,
+   * we need to prevent to do that).
    */
-  Process.prototype.shift = function(prev, current) {
+  Process.prototype.shift = function(prev, current, newBeginnings) {
     if (prev !== this.states.phase) {
-      throw new Error(`Must be ${prev} before shift to ${current},
+      var error = new Error(`Must be ${prev} before shift to ${current},
                        but now it's ${this.states.phase}`);
+      console.error(error);
+      throw error;
     }
     this.states.phase = current;
     if (this.until.phase === this.states.phase) {
       this.until.resolver();
     }
-    // Concat new step to switch to the 'stop promise'.
+    // Concat new step to switch to the 'next promise'.
     this.states.currentPromise =
     this.states.currentPromise.catch((err) => {
       if (!(err instanceof Process.InterruptError)) {
@@ -55,7 +81,39 @@
       // make the chain omit this error and execute the following steps.
     });
 
+    // Execute these steps and care no previous steps which had been queued,
+    // since we're the first step(s) of this phase.
+    //
+    // And if there is execution error the promise this method return would
+    // become an rejected promise, so that we need to add a resecue method
+    // after this.
+    this.states.currentPromise = this.appendErrorHandler(
+      this.executeSteps(newBeginnings));
     return this;
+  };
+
+  /** We need this to prevent the step() throw errors.
+  * In this catch, we distinguish the interrupt and other errors,
+  * and then bypass the former and print the later out.
+  *
+  * The final fate of the real errors is it would be re-throw again
+  * after we print the instance out. We need to do that since after an
+  * error the promise shouldn't keep executing. If we don't throw it
+  * again, since the error has been catched, the rest steps in the
+  * promise would still be executed, and the user-set rescues would
+  * not catch this error.
+  *
+  * As a conclusion, no matter whether the error is an interrupt,
+  * we all need to throw it again. The only difference is if it's
+  * and interrupt we don't print it out.
+  */
+  Process.prototype.appendErrorHandler = function(promise) {
+    return promise.catch((err) => {
+      if (!(err instanceof Process.InterruptError)) {
+        console.error(`ERROR during step executes: ${err.message}`, err);
+      }
+      throw err;
+    });
   };
 
   /**
@@ -108,74 +166,17 @@
         }
       });
 
-    // Then, concat the step(s).
+    // Read it as:
+    // 1. execute all steps to generate resolvable-promises
+    // 2. Promise.all(...) to wait these resolvable-promises
+    // 3. append a general error handler after the Promise.all
+    //    so that if any error occurs it would print them out
+    // And the final result is:
+    // currentPromise { [Promise.all([stepA1, stepA2...])] [error handler] +}
     this.states.currentPromise =
-      this.states.currentPromise.then(() => {
-        // We need firstly execute the step(s) to get the Promise/Process,
-        // and then concat them in different way.
-        // So we unwrap the step first, and then put it in the array.
-        // Since we need to give the 'currentPromise' a function as what the
-        // steps passed here.
-        var chains = steps.map((step) => {
-          var chain;
-          // If it has multiple results, means it's a task group
-          // generated results.
-          if (this.states.stepResults.length > 1) {
-            chain = step(this.states.stepResults);
-          } else {
-            chain = step(this.states.stepResults[0]);
-          }
-
-          // Ordinary function returns 'undefine' or other things.
-          if (!chain) {
-            // It's a plain value.
-            // Store it as one of results.
-            this.states.stepResults.push(chain);
-            return Promise.resolve(chain);
-          }
-
-          if (chain instanceof Process) {
-            // Premise: it's a started process.
-            return chain.states.currentPromise.then((resolvedValue) => {
-              this.states.stepResults.push(resolvedValue);
-            });
-          } else if (chain.then) {
-            // Ordinary promise can be concated immediately.
-            return chain.then((resolvedValue) => {
-              this.states.stepResults.push(resolvedValue);
-            });
-          } else {
-            // It's a plain value.
-            // Store it as one of results.
-            this.states.stepResults.push(chain);
-            return Promise.resolve(chain);
-          }
-        });
-        return Promise.all(chains);
-      });
-
-    // Concat an error handling step to the step and the possible interrupt.
+      this.states.currentPromise.then(() => this.executeSteps(steps));
     this.states.currentPromise =
-      this.states.currentPromise.catch((err) => {
-        // We need this to prevent the step() throw errors.
-        // In this catch, we distinguish the interrupt and other errors,
-        // and then bypass the former and print the later out.
-        //
-        // The final fate of the real errors is it would be re-throw again
-        // after we print the instance out. We need to do that since after an
-        // error the promise shouldn't keep executing. If we don't throw it
-        // again, since the error has been catched, the rest steps in the
-        // promise would still be executed, and the user-set rescues would
-        // not catch this error.
-        //
-        // As a conclusion, no matter whether the error is an interrupt,
-        // we all need to throw it again. The only difference is if it's
-        // and interrupt we don't print it out.
-        if (!(err instanceof Process.InterruptError)) {
-          console.error(`ERROR during step executes: ${err.message}`, err);
-        }
-        throw err;
-      });
+      this.appendErrorHandler(this.states.currentPromise);
     return this;
   };
 
@@ -191,6 +192,53 @@
       }
     });
     return this;
+  };
+
+  /**
+   * Execute steps and get Promises or plain values them return,
+   * and then return the wrapped Promise as the next step of this
+   * process.
+   */
+  Process.prototype.executeSteps = function(steps) {
+    // So we unwrap the step first, and then put it in the array.
+    // Since we need to give the 'currentPromise' a function as what the
+    // steps passed here.
+    var chains = steps.map((step) => {
+      var chain;
+      // If it has multiple results, means it's a task group
+      // generated results.
+      if (this.states.stepResults.length > 1) {
+        chain = step(this.states.stepResults);
+      } else {
+        chain = step(this.states.stepResults[0]);
+      }
+
+      // Ordinary function returns 'undefine' or other things.
+      if (!chain) {
+        // It's a plain value.
+        // Store it as one of results.
+        this.states.stepResults.push(chain);
+        return Promise.resolve(chain);
+      }
+
+      if (chain instanceof Process) {
+        // Premise: it's a started process.
+        return chain.states.currentPromise.then((resolvedValue) => {
+          this.states.stepResults.push(resolvedValue);
+        });
+      } else if (chain.then) {
+        // Ordinary promise can be concated immediately.
+        return chain.then((resolvedValue) => {
+          this.states.stepResults.push(resolvedValue);
+        });
+      } else {
+        // It's a plain value.
+        // Store it as one of results.
+        this.states.stepResults.push(chain);
+        return Promise.resolve(chain);
+      }
+    });
+    return Promise.all(chains);
   };
 
   /**
