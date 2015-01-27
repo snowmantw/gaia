@@ -23,6 +23,7 @@
     console.log('>> LockScreenClockWidgetDelayLastSeconds start');
     this.stream = new Stream(this.configs.stream);
     return this.stream.start(this.handleEvent)
+      .next(this.component.updateClock.bind(this.component))
       .next(this.stream.ready.bind(this.stream))
       .next(this.waitLastSeconds.bind(this))
       .next(this.transferToTick.bind(this));
