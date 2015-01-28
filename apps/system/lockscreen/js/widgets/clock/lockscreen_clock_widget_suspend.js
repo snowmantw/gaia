@@ -12,7 +12,7 @@
     ];
     this.configs.stream.sources =
       [new DOMEventSource({events: ['screenchange']})];
-    this.handleEvent = this.handleEvent.bind(this);
+    this.handleSourceEvent = this.handleSourceEvent.bind(this);
   };
   LockScreenClockWidgetSuspend.prototype =
     Object.create(LockScreenBasicState.prototype);
@@ -20,7 +20,7 @@
   LockScreenClockWidgetSuspend.prototype.start = function() {
     console.log('>> LockScreenClockWidgetSuspend start');
     this.stream = new Stream(this.configs.stream);
-    return this.stream.start(this.handleEvent)
+    return this.stream.start(this.handleSourceEvent)
       .next(this.stream.ready.bind(this.stream));
   };
 
@@ -30,7 +30,7 @@
     return LockScreenBasicState.prototype.stop.call(this);
   };
 
-  LockScreenClockWidgetSuspend.prototype.handleEvent =
+  LockScreenClockWidgetSuspend.prototype.handleSourceEvent =
   function(evt) {
     switch (evt.type) {
       case 'screenchange':

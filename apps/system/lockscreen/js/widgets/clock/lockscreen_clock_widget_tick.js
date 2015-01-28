@@ -29,7 +29,7 @@
         ]}),
         this._minuteSource
       ];
-    this.handleEvent = this.handleEvent.bind(this);
+    this.handleSourceEvent = this.handleSourceEvent.bind(this);
   };
   LockScreenClockWidgetTick.prototype =
     Object.create(LockScreenBasicState.prototype);
@@ -37,7 +37,7 @@
   LockScreenClockWidgetTick.prototype.start = function() {
     console.log('>> LockScreenCLockWidetTick start');
     this.stream = new Stream(this.configs.stream);
-    return this.stream.start(this.handleEvent)
+    return this.stream.start(this.handleSourceEvent)
       .next(this.component.updateClock.bind(this.component))
       .next(this.stream.ready.bind(this.stream));
   };
@@ -49,7 +49,7 @@
       .next(this._minuteSource.stop.bind(this._minuteSource));
   };
 
-  LockScreenClockWidgetTick.prototype.handleEvent =
+  LockScreenClockWidgetTick.prototype.handleSourceEvent =
   function(evt) {
     switch (evt.type) {
       case 'ftudone':
