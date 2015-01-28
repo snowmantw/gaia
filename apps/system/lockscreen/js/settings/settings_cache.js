@@ -42,11 +42,10 @@
     var reqcontent = {};
     reqcontent[entry] = value;
     var req = lock.set(reqcontent);
-    req.onsuccess(() => {
+    req.then(() => {
       this.cache[entry] = value;
       resolve();
-    });
-    req.onerror(() => {
+    }).catch(() => {
       reject();
     });
     return promise;

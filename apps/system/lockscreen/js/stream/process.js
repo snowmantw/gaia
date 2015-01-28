@@ -234,14 +234,15 @@
     // with some waiting Promise in its body. See the next branch of this
     // section. Of course if we're in non-preemptive mode (by default) we don't
     // care it.
-    if (!this.configs.preemptive && 0 !== this.states.currentPhaseSteps) {
+    if ((!this.configs.preemptive) ||
+        (this.configs.preemptive && 0 !== this.states.currentPhaseSteps)) {
       this.states.currentPromise =
         this.states.currentPromise.then(() => this.generateStep(tasks));
       this.states.currentPromise =
         this.states.currentPromise.catch(this.generateErrorLogger({
           'nth-step': this.currentPhaseSteps
         }));
-    } else {
+    } else if (this.configs.preemptive && 0 === this.states.currentPhaseSteps){
       // Suppressor is to ignore the last error from the interrupted Promise,
       // no matter whether it is or isn't an interrupt.
       var interruptedPromise = this.states.currentPromise;
@@ -303,13 +304,16 @@
     // Since we need to give the 'currentPromise' a function as what the
     // tasks passed here.
     var chains = tasks.map((task) => {
+      // Reset the registered results.
+      var stepResults = this.states.stepResults;
+      this.states.stepResults = [];
       var chain;
       // If it has multiple results, means it's a task group
       // generated results.
       if (this.states.stepResults.length > 1) {
-        chain = task(this.states.stepResults);
+        chain = task(stepResults);
       } else {
-        chain = task(this.states.stepResults[0]);
+        chain = task(stepResults[0]);
       }
 
       // Ordinary function returns 'undefine' or other things.
