@@ -1,4 +1,4 @@
-/* global Stream, DOMEventSource, TimerSource */
+/* global Stream, DOMEventSource, MinuteClockSource */
 /* global LockScreenClockWidgetSuspend, LockScreenBasicState */
 'use strict';
 
@@ -15,12 +15,8 @@
     this.configs.stream.interrupts = [
       'screenchange'
     ];
-    this.configs.tickInterval = 1000;
-    this._timerSource = new TimerSource({
-      generator: () => {
-        return { type: 'lockscreen-notification-clock-tick' };
-      },
-      interval: this.configs.tickInterval
+    this._minuteSource = new MinuteClockSource({
+      'type': 'lockscreen-notification-clock-tick'
     });
 
     this.configs.stream.sources =
@@ -31,7 +27,7 @@
         'screenchange',
         'lockscreen-notification-clock-tick'
         ]}),
-        this._timerSource
+        this._minuteSource
       ];
     this.handleEvent = this.handleEvent.bind(this);
   };
@@ -50,7 +46,7 @@
   function() {
     console.log('>> LockScreenClockWidgetTick stop');
     return LockScreenBasicState.prototype.stop.call(this)
-      .next(this._timerSource.stop.bind(this._timerSource));
+      .next(this._minuteSource.stop.bind(this._minuteSource));
   };
 
   LockScreenClockWidgetTick.prototype.handleEvent =

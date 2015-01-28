@@ -1,6 +1,6 @@
 /* global DOMEventSource */
 /* global LockScreenBasicState */
-/* global LockScreenClockWidgetDelayLastSeconds */
+/* global LockScreenClockWidgetTick */
 'use strict';
 
 /**
@@ -28,12 +28,12 @@
     return LockScreenBasicState.prototype.start.call(this)
       .next(this.queryElements.bind(this))
       .next(this.component.updateClock.bind(this.component))
-      .next(this.transferToNext.bind(this));
+      .next(this.transferToTick.bind(this));
   };
 
-  LockScreenClockWidgetSetup.prototype.transferToNext = function() {
-    console.log('>> when transfer to next, document.hidden:', document.hidden);
-    return this.transferTo(LockScreenClockWidgetDelayLastSeconds);
+  LockScreenClockWidgetSetup.prototype.transferToTick = function() {
+    console.log('>> when transfer to tick');
+    return this.transferTo(LockScreenClockWidgetTick);
   };
 
   LockScreenClockWidgetSetup.prototype.queryElements = function() {

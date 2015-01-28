@@ -1,5 +1,5 @@
 /* global Stream, DOMEventSource */
-/* global LockScreenClockWidgetDelayLastSeconds, LockScreenBasicState */
+/* global LockScreenClockWidgetTick, LockScreenBasicState */
 'use strict';
 
 /***/
@@ -35,15 +35,15 @@
     switch (evt.type) {
       case 'screenchange':
         if (evt.detail.screenEnabled) {
-          return this.transferToDelayLastSeconds();
+          return this.transferToTick();
         }
     }
   };
 
-  LockScreenClockWidgetSuspend.prototype.transferToDelayLastSeconds =
+  LockScreenClockWidgetSuspend.prototype.transferToTick =
   function() {
-    console.log('>> transferToDelayLastSeconds called;');
-    this.component.transferTo(LockScreenClockWidgetDelayLastSeconds);
+    console.log('>> transferToTick called;');
+    this.component.transferTo(LockScreenClockWidgetTick);
   };
 
   exports.LockScreenClockWidgetSuspend = LockScreenClockWidgetSuspend;

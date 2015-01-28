@@ -3,7 +3,7 @@
 /**
  * The core component to sequentialize asynchronous steps.
  * Basically it's an 'interruptable promise', but more than be interrupted,
- * it could 'shift' from one to another phase, with the preemptive
+ * it could 'shift' from one to another phase, with the non-preemptive
  * interrupting model.
  *
  * Example:
@@ -12,12 +12,12 @@
  *           .next(stepA)
  *           .next(stepB)
  *           ...
- *    // later, because of some urgent events
+ *    // later, some urgent events come
  *    process.stop()       // one of the default three phases
  *           .next(stopStepA)
  *           .next(stopStepB)
  *           ....
- *   // later, because of some other interrupts
+ *   // later, some other interrupts come
  *   process.shift('stop', 'dizzy')
  *          .next(dizzyStepA)
  *          .next(dizzyStepB)
@@ -38,12 +38,70 @@
  *
  * The first step of the 'stop' phase, namely the 'doThisAsQuickAsPossible',
  * would *not* get executed immediately, since the promise is still waiting the
- * last step before interruption. So, even the following steps of the 'start'
+ * last step earlier interruption. So, even the following steps of the 'start'
  * phase would all get dropped, the new phase still need to wait the last one
  * asynchronous step get resolved to get kicked off.
+ *
+ * ---
+ * ## About the non-preemptive model
+ *
+ * The reason why we can't have a preemptive process is because we couldn't
+ * interrupt each single step in the process, so the most basic unit could be
+ * interrupted is the step. So, the caveat here is make the step as small as
+ * possible, and treat it as some atomic operation that guaranteed to not been
+ * interrupted by Process. For example, if we alias 'next' as 'atomic':
+ *
+ *    process.start()
+ *           .atomic(stepA)       // <--- now it's waiting this
+ *           .atomic(stepB)
+ *
+ *   // some urgent event occurs
+ *   process.stop()
+ *          .atomic( doThisAsQuickAsPossible )
+ *
+ * It would be better than:
+ *
+ *    process.start()
+ *           .atomic(() => stepA.then(stepB))
+ *
+ *   // some urgent event occurs
+ *   process.stop()
+ *          .atomic( doThisAsQuickAsPossible )
+ *
+ * Since in the second example the first step of the 'stop' phase must wait
+ * both the stepA & stepB, while in the first one it only needs to wait stepA.
+ * However, this depends on which atomic operations is needed.
+ *
+ * Nevertheless, user is able to make the steps 'interruptible' via some special
+ * methods of the process. That is, to monitor the phase changes to nullify the
+ * step, *and* set the process as in the preemptive mode:
+ *
+ *    var process = new Process({ preemptive: true });
+ *    process.start()
+ *      .next(() => {
+ *        var phaseShifted = false;
+ *        process.until('stop')
+ *          .next(() => {phaseShifted = true;});
+ *        return new Promise((r, rj) => {
+ *          setTimeout(() => {
+ *            if (phaseShifted) { console.log('do nothing'); }
+ *            else              { console.log('do something'); }
+ *          }, 1000)
+ *        });
+ *      })
+ *
+ *   // some urgent event occurs
+ *   process.stop()
+ *          .next( doThisAsQuickAsPossible )
+ *
+ * So that the first step of the 'stop' phase would execute immediately after
+ * the phase shifted, *and* the last step of 'start' would do nothing harmful.
+ * In future the trick to nullify the last step may be included in as a method
+ * of Process, but currently the manual detecting is still necessary.
  */
+
 (function(exports) {
-  var Process = function() {
+  var Process = function(configs) {
     this.states = {
       phase: null,
       currentPromise: null,
