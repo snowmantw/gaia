@@ -7,7 +7,8 @@
 (function(exports) {
   var MinuteClockSource = function(configs) {
     this.configs = {
-      type: configs.type
+      type: configs.type,
+      interval: 60000       // one minute.
     };
     this._id = null;
     this._forwardTo = null;
@@ -24,7 +25,7 @@
       this._id = window.setInterval(() => {
         this.onchange();
       }, this.configs.interval);
-    }, leftSeconds * 1000);
+    }, leftSeconds);
     return this;
   };
 
