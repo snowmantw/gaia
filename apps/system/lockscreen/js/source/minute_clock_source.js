@@ -20,12 +20,14 @@
   MinuteClockSource.prototype.start = function(forwardTo) {
     this._forwardTo = forwardTo;
     var seconds = (new Date()).getSeconds();
-    var leftSeconds = 60 - seconds;
+    // If it's at the second 0th of the minute, immediate start to tick.
+    var leftMilliseconds = (0 === seconds) ? 0 : (60 - seconds) * 1000;
     window.setTimeout(() => {
+      this.onchange();    // When it's up to the 0 sec of the new minute.
       this._id = window.setInterval(() => {
         this.onchange();
       }, this.configs.interval);
-    }, leftSeconds);
+    }, leftMilliseconds);
     return this;
   };
 
