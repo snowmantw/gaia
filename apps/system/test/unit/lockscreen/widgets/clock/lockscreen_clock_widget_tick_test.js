@@ -78,11 +78,6 @@ suite('LockScreenClockWidgetTick > ', function() {
       `when 'ftudone' it doesn't update the clock`);
     mockThis.component.updateClock = this.sinon.stub();
 
-    method.call(mockThis, {'type': 'ftudone'});
-    assert.isTrue(mockThis.component.updateClock.called,
-      `when 'ftudone' it doesn't update the clock`);
-    mockThis.component.updateClock = this.sinon.stub();
-
     method.call(mockThis, {'type': 'moztimechange'});
     assert.isTrue(mockThis.component.updateClock.called,
       `when 'moztimechange' it doesn't update the clock`);

@@ -74,9 +74,9 @@
  *
  * Nevertheless, user is able to make the steps 'interruptible' via some special
  * methods of the process. That is, to monitor the phase changes to nullify the
- * step, *and* set the process as in the preemptive mode:
+ * step:
  *
- *    var process = new Process({ preemptive: true });
+ *    var process = new Process();
  *    process.start()
  *      .next(() => {
  *        var phaseShifted = false;
@@ -95,13 +95,13 @@
  *          .next( doThisAsQuickAsPossible )
  *
  * So that the first step of the 'stop' phase would execute immediately after
- * the phase shifted, *and* the last step of 'start' would do nothing harmful.
+ * the phase shifted, since the last step of the previous phase aborted itself.
  * In future the trick to nullify the last step may be included in as a method
  * of Process, but currently the manual detecting is still necessary.
  */
 
 (function(exports) {
-  var Process = function(configs) {
+  var Process = function() {
     this.states = {
       phase: null,
       currentPromise: null,
@@ -113,10 +113,6 @@
       stepResults: [],
       // @see: #next
       currentPhaseSteps: 0
-    };
-
-    this.configs = {
-      preemptive: false
     };
   };
 
@@ -227,41 +223,12 @@
     //
     // The 'checkInterrupt' and 'error handler' wrap the actual steps
     // to do the necessary checks.
-    // And we follow this path only when the tasks is not the first step of the
-    // current phase. If it is, *and* we're in the preemptive mode, we must not
-    // concat it to the currentPromise, which would make the step still waiting
-    // the last step of the previous phase done, especially if the step comes
-    // with some waiting Promise in its body. See the next branch of this
-    // section. Of course if we're in non-preemptive mode (by default) we don't
-    // care it.
-    if ((!this.configs.preemptive) ||
-        (this.configs.preemptive && 0 !== this.states.currentPhaseSteps)) {
-      this.states.currentPromise =
-        this.states.currentPromise.then(() => this.generateStep(tasks));
-      this.states.currentPromise =
-        this.states.currentPromise.catch(this.generateErrorLogger({
-          'nth-step': this.currentPhaseSteps
-        }));
-    } else if (this.configs.preemptive && 0 === this.states.currentPhaseSteps){
-      // Suppressor is to ignore the last error from the interrupted Promise,
-      // no matter whether it is or isn't an interrupt.
-      var interruptedPromise = this.states.currentPromise;
-      interruptedPromise =
-        interruptedPromise.then(this.generateSuppressor);
-
-      // Execute these steps and care no previous steps which had been queued,
-      // since we're the first step(s) of this phase.
-      //
-      // And if there is execution error the promise this method return would
-      // become an rejected promise, so that we need to add a resecue method
-      // after this. See the note at the head of this file.
-      this.states.currentPromise =
-        this.generateStep(tasks);
-      this.states.currentPromise =
-        this.states.currentPromise.catch(this.generateErrorLogger({
-          'nth-step': this.currentPhaseSteps
-        }));
-    }
+    this.states.currentPromise =
+      this.states.currentPromise.then(() => this.generateStep(tasks));
+    this.states.currentPromise =
+      this.states.currentPromise.catch(this.generateErrorLogger({
+        'nth-step': this.currentPhaseSteps
+      }));
 
     // A way to know if these tasks is the first steps in the current phase,
     // and it's also convenient for debugging.
@@ -281,6 +248,14 @@
         handler(err);
       }
     });
+    return this;
+  };
+
+  /**
+   * An interface to explicitly put multiple tasks execute at one time.
+   **/
+  Process.prototype.wait = function() {
+    this.next.apply(this, arguments);
     return this;
   };
 
@@ -367,14 +342,6 @@
       }
       throw err;
     };
-  };
-
-  /**
-   * An interface to explicitly put multiple steps execute at one time.
-   **/
-  Process.prototype.wait = function() {
-    this.next.apply(this, arguments);
-    return this;
   };
 
   Process.prototype.checkInterrupt = function(step) {
