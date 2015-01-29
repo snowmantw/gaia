@@ -12,7 +12,7 @@
     this.resources.elements.time = 'lockscreen-clock-time';
     this.resources.elements.date = 'lockscreen-date';
     this._timeFormat = null;
-    this.configs.logger.debug = true;
+    this.configs.logger.debug = false;  // turn on this when we're debugging
   };
   LockScreenClockWidget.prototype =
     Object.create(LockScreenBasicComponent.prototype);
