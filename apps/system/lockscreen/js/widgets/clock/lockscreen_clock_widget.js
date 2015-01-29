@@ -12,6 +12,7 @@
     this.resources.elements.time = 'lockscreen-clock-time';
     this.resources.elements.date = 'lockscreen-date';
     this._timeFormat = null;
+    this.configs.logger.debug = true;
   };
   LockScreenClockWidget.prototype =
     Object.create(LockScreenBasicComponent.prototype);
@@ -22,7 +23,6 @@
 
   LockScreenClockWidget.prototype.updateClock =
   function() {
-    console.log('>> updateClock called');
     var now = new Date();
     var f = new navigator.mozL10n.DateTimeFormat();
     var _ = navigator.mozL10n.get;

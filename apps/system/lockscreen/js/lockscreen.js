@@ -655,12 +655,10 @@
     var wasAlreadyUnlocked = !this.locked;
     this.locked = false;
 
-    console.log('>> unlock, wasAlreadyUnlocked: ', wasAlreadyUnlocked);
     if (wasAlreadyUnlocked) {
       return;
     }
 
-    console.log('>> lockScreenClockWidget:', this.lockScreenClockWidget);
     this.lockScreenClockWidget.stop().destroy();
     delete this.lockScreenClockWidget;
 

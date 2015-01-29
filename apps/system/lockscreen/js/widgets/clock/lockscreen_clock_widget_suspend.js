@@ -18,7 +18,6 @@
     Object.create(LockScreenBasicState.prototype);
 
   LockScreenClockWidgetSuspend.prototype.start = function() {
-    console.log('>> LockScreenClockWidgetSuspend start');
     this.stream = new Stream(this.configs.stream);
     return this.stream.start(this.handleSourceEvent)
       .next(this.stream.ready.bind(this.stream));
@@ -26,7 +25,6 @@
 
   LockScreenClockWidgetSuspend.prototype.stop =
   function() {
-    console.log('>> LockScreenClockWidgetSuspend stop');
     return LockScreenBasicState.prototype.stop.call(this);
   };
 
@@ -42,7 +40,6 @@
 
   LockScreenClockWidgetSuspend.prototype.transferToTick =
   function() {
-    console.log('>> transferToTick called;');
     this.component.transferTo(LockScreenClockWidgetTick);
   };
 

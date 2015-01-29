@@ -35,7 +35,6 @@
     Object.create(LockScreenBasicState.prototype);
 
   LockScreenClockWidgetTick.prototype.start = function() {
-    console.log('>> LockScreenCLockWidetTick start');
     this.stream = new Stream(this.configs.stream);
     return this.stream.start(this.handleSourceEvent)
       .next(this.component.updateClock.bind(this.component))
@@ -44,7 +43,6 @@
 
   LockScreenClockWidgetTick.prototype.stop =
   function() {
-    console.log('>> LockScreenClockWidgetTick stop');
     return LockScreenBasicState.prototype.stop.call(this)
       .next(this._minuteSource.stop.bind(this._minuteSource));
   };
@@ -66,7 +64,6 @@
   };
 
   LockScreenClockWidgetTick.prototype.transferToSuspend = function() {
-    console.log('<< transferToSuspend called;');
     this.component.transferTo(LockScreenClockWidgetSuspend);
   };
 

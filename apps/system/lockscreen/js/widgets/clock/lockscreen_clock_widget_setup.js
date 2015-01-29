@@ -32,7 +32,6 @@
   };
 
   LockScreenClockWidgetSetup.prototype.transferToTick = function() {
-    console.log('>> when transfer to tick');
     return this.transferTo(LockScreenClockWidgetTick);
   };
 
