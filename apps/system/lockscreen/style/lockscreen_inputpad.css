@@ -49,6 +49,10 @@
   margin-top: -0.75rem;
 }
 
+#lockscreen-passcode-code > span[data-dot]:-moz-locale-dir(rtl):before {
+  right: 50%;
+}
+
 #lockscreen-passcode-pad {
   -moz-box-sizing: border-box;
   position: absolute;
