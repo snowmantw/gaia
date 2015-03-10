@@ -1,4 +1,5 @@
 /* global LockScreenClockWidget */
+/* global LockScreenClockWidgetView */
 'use strict';
 
 /**
@@ -1113,7 +1114,7 @@
   LockScreen.prototype.createClockWidget = function() {
     // Adapt a state-widget in the curret architecture.
     this.lockScreenClockWidget = new LockScreenClockWidget(
-      document.getElementById('lockscreen-clock-widget'));
+        new LockScreenClockWidgetView());
     this.lockScreenClockWidget.start();
   };
 

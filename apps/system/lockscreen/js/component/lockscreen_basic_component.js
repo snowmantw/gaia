@@ -17,7 +17,17 @@
 (function(exports) {
 
   /**
-   * View is the only thing parent component needs to manage.
+   * The argument 'view' is the only thing parent component needs to manage.
+   * Please note that the 'view' isn't for UI rendering, although that
+   * UI view is the most common of them. User could chose other views like
+   * data-view or debugging-view to contruct the program. It would still
+   * be "rendered" (perform the effect), but how to synthesize the effects
+   * of parent and children now is the user's duty. For example, if we have a
+   * 'console-view' to print out things instead of rendering UI, should it
+   * print text from children first? Or the parent, since it's a wrapping
+   * object, should info the user its status earlier than its children?
+   * These behaviors should be encapsulated inside the 'view', and be
+   * handled at the underlying level.
    */
   var LockScreenBasicComponent = function(view) {
     this._subcomponents = null;
@@ -28,9 +38,7 @@
     //
     // Resources is for external resources like settings value or DOM elements.
     this.resources = {
-      elements: {
-        view: view
-      }
+      elements: {}
     };
     this.configs = {
       logger: {
@@ -38,6 +46,7 @@
       }
     };
     this.logger = new LockScreenStateLogger();
+    this.view = view;
   };
 
   /**
@@ -164,6 +173,22 @@
       }
     }, []);
     return Promise.all(waitPromises);
+  };
+
+  /**
+   * Forward the data to render the view.
+   * If it's a real UI view and with tech like virtual DOM in React.js,
+   * we could perform a high-efficiency rendering while keep the client code
+   * as simple as possible.
+   *
+   * The target is an optional 'canvas' of the rendering target. It would,
+   * if the view is an UI view for example, 'erase' it and render new content
+   * each time this function get invoked. However, since we have not only
+   * UI view, some targeting 'canvas' could be more tricky, like FileObject,
+   * Blob, sound system, etc.
+   */
+  LockScreenBasicComponent.prototype.render = function(props, target) {
+    return this.view.render(props, target);
   };
 
   exports.LockScreenBasicComponent = LockScreenBasicComponent;
