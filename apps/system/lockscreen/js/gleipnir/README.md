@@ -36,10 +36,10 @@ The importance of this rule is, now we're able to ensure the way to sequentializ
 steps remains the same.: the main control flow would concat all synchronous and asynchronous
 functions as steps with Process. For example:
 
-    function start() {
+    function startRendering(settings) {
       var process = new Process();
       process.start()
-        .next( getUrl )
+        .next( getUrl.bind(null, settings) )
         .next( fetchData )
         .next( render );
       return process;
@@ -51,9 +51,10 @@ is synchronous, while to fetch data from server is definitely an asynchronous st
 last step of rendering the result should be some synchronous DOM manipulations. Without Process
 we may do this:
 
-    function start() {
-      var url = getUrl;
-      return fetchData(url).then((result) => {
+    function startRendering(settings) {
+      var url = getUrl(settings);
+      return fetchData(url)
+      .then((result) => {
         render(result);
       });
     }
@@ -72,10 +73,77 @@ erupts. However, to manage and use those flags & locks well, especially when the
 fast, is too difficult to be done. So we decide to forcibly put all event and its handler in
 queue, in most cases is much simpler and robuster. And Process could achieve that in Gleipnir:
 
-    addEventListener('some-event', handleEventWithQueue);
+    addEventListener('foo', queueHandler);
+    addEventListener('bar', queueHandler);
 
-    function handleEventWithQueue(event) {
-      this.mainProcess.next()
+    function queueHandler(event) {
+      mainProcess.next(() => handleEvent(event));
     }
 
-However, there are still some special events should be handled immediately. 
+    function handleEvent(event) {
+      switch(event.type) {
+        case 'foo':
+          print('foo occurs');
+        break;
+        case 'bar':
+          return startRendering(event.defaultSettings);
+      }
+    }
+
+In this way we: 1. make sure when events erupt, they would be handled one-by-one,
+so it's racing-free now 2. generate sequentialized operations and return it,
+so that the main process could concat it every time the event occurs.
+
+However, there are still some special events should be handled immediately. In Geipnir we call
+them as *interrputs*. For example, if we want to stop to render elements because the screen
+now is off, we could rewrite the 'queueHandler' as:
+
+
+    addEventListener('foo', queueHandler);
+    addEventListener('bar', queueHandler);
+    addEventListener('screenchange', queueHandler);
+
+    function queueHandler(event) {
+      if ('screenchange' === event.type) {
+        handleEvent(event);
+      } else {
+        mainProcess.next(() => handleEvent(event));
+      }
+    }
+
+In this version, if the incoming event is interrupt ('screenchange'), we would handle it
+immediately. Usually it would immediately stop the process and do the clear up jobs as:
+
+    function handleEvent(event) {
+      switch(event.type) {
+        case 'screenchange':
+          if (!event.details.isEnabled) {
+            mainProcess.stop();
+          }
+    }
+
+
+The Process#stop method would switch the phase of the process from 'started' to 'stopped'.
+By doing so, all handlers still in queue would not be executed anymore. This is because:
+
+    process
+      .start()
+        .next( stepFoo )
+        .next( stepBar )
+
+    // In somewhere else
+    process
+      .stop()
+        .next( stepX )
+        .next( stepZ )
+
+Here, the 'stepFoo' as 'stepBar' are tagged as 'started' steps, since they're *defined*
+after the process starting itself. So if the process is still waiting the asynchronous
+'stepFoo', while in somewhere else the process got stopped because interrupts come, the
+rest 'stepBar' would never be executed. Instead of, the 'stepX' tagged as steps of 'stopped'
+phase would be executed. As a result, the phase changing during the definition and running
+*stage* is the reason why Process could work well on both operation management and event
+handling. The only issue is the interface Process exposed is still too low-level, so
+later we would introduce the advanced structure: Stream, which is based on Process but
+it has nicer APIs for event handling.
+  
