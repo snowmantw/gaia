@@ -171,13 +171,17 @@
 
   LockScreen.prototype.write = function(key, value) {
     if (Array.isArray(this._store[key])) {
+      var promises = [];  // Waiting all readers done so the writing is done.
       var fetchers = this._store[key];
       this._store[key] = value; // First we register the value (prevent racing)
       fetchers.forEach((deferred) => {
+        promises.push(deferred.promise);
         deferred.resolve(value);
       });
+      return Promise.all(promises);
     } else {
       this._store[key] = value;
+      return Promise.resolve();
     }
   };
 
@@ -216,9 +220,11 @@
         // No matter turn on or off from screen timeout or poweroff,
         // all secure apps would be hidden.
         this.dispatchEvent('secure-killapps');
-        if (this.enabled) {
-          this.overlayLocked(true);
-        }
+        this.fetch('enabled').then((value) => {
+          if (true === value) {
+            this.overlayLocked(true);
+          }
+        });
         break;
 
       case 'click':
@@ -563,39 +569,22 @@
   */
   LockScreen.prototype.setEnabled =
   function ls_setEnabled(val) {
-    var prevEnabled = this.enabled;
-    if (typeof val === 'string') {
-      this.enabled = val == 'false' ? false : true;
-    } else {
-      this.enabled = val;
-    }
-
-    if (prevEnabled && !this.enabled && this.locked) {
-      this.unlock();
-    }
+    this.write('enabled', val);
   };
 
   LockScreen.prototype.setPassCodeEnabled =
   function ls_setPassCodeEnabled(val) {
-    if (typeof val === 'string') {
-      this.passCodeEnabled = val == 'false' ? false : true;
-    } else {
-      this.passCodeEnabled = val;
-    }
+    this.write('passCodeEnabled', val);
   };
 
   LockScreen.prototype.setUnlockSoundEnabled =
   function ls_setUnlockSoundEnabled(val) {
-    if (typeof val === 'string') {
-      this.unlockSoundEnabled = val == 'false' ? false : true;
-    } else {
-      this.unlockSoundEnabled = val;
-    }
+    this.write('unlockSoundEnabled', val);
   };
 
   LockScreen.prototype.setPassCodeLockTimeout =
   function(val) {
-    this.passCodeRequestTimeout = val;
+    this.write('passCodeRequestTimeout', val);
   };
 
   LockScreen.prototype.setLockMessage =
@@ -761,7 +750,6 @@
     this.overlay.classList.toggle('no-transition', instant);
     this.overlay.classList.remove('unlocked');
     this.overlay.hidden = false;
-
   };
 
   LockScreen.prototype.lock =
