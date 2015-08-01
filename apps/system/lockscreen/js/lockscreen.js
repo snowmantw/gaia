@@ -14,10 +14,38 @@
   };
   LockScreen.prototype = {
     name: 'LockScreen',
-
     configs: {
       mode: 'default'
     },
+    _store: {
+      /*
+      * Boolean return whether if the lock screen is enabled or not.
+      * Must not multate directly - use setEnabled(val)
+      * Only Settings Listener should change this value to sync with data
+      * in Settings API.
+      */
+      enabled: undefined,
+
+      /*
+      * Boolean returns wether we want a sound effect when unlocking.
+      */
+      unlockSoundEnabled: undefined,
+
+      /*
+      * Boolean return whether if the lock screen is enabled or not.
+      * Must not multate directly - use setPassCodeEnabled(val)
+      * Only Settings Listener should change this value to sync with data
+      * in Settings API.
+      * Will be ignored if 'enabled' is set to false.
+      */
+      passCodeEnabled: undefined,
+
+      /*
+      * The time to request for passcode input since device is off.
+      */
+      passCodeRequestTimeout: undefined,
+    },
+
     // 'notificationId' for opening app after unlocking.
     _unlockingMessage: {},
     // The unlocking strategy.
@@ -43,28 +71,6 @@
     locked: true,
 
     /*
-    * Boolean return whether if the lock screen is enabled or not.
-    * Must not multate directly - use setEnabled(val)
-    * Only Settings Listener should change this value to sync with data
-    * in Settings API.
-    */
-    enabled: true,
-
-    /*
-    * Boolean returns wether we want a sound effect when unlocking.
-    */
-    unlockSoundEnabled: false,
-
-    /*
-    * Boolean return whether if the lock screen is enabled or not.
-    * Must not multate directly - use setPassCodeEnabled(val)
-    * Only Settings Listener should change this value to sync with data
-    * in Settings API.
-    * Will be ignored if 'enabled' is set to false.
-    */
-    passCodeEnabled: false,
-
-    /*
     * Boolean returns whether the screen is enabled, as mutated by screenchange
     * event.
     * Note: 'undefined' should be regarded as 'true' as screenchange event
@@ -88,11 +94,6 @@
     */
     _regenerateMaskedBackgroundColorFrom: undefined,
 
-    /*
-    * The time to request for passcode input since device is off.
-    */
-    passCodeRequestTimeout: 0,
-
     /**
      * How long the unlocked session is.
      */
@@ -103,11 +104,6 @@
      */
     _lastLockedInterval: 0,
     _lastLockedTimeStamp: 0,
-
-    /*
-    * Check the timeout of passcode lock
-    */
-    _passCodeTimeoutCheck: false,
 
     /*
     * If user is sliding.
@@ -151,6 +147,39 @@
     HANDLE_MAX: 70,
     chargingStatus: new window.LockScreenChargingStatus()
   };  // -- LockScreen.prototype --
+
+  /**
+   * Since some values are not ready while functions try to read it,
+   * we need to turn them as the async requests.
+   */
+  LockScreen.prototype.fetch = function(key) {
+    // If there is still no one want to read it,
+    // or the readers are queued.
+    var deferred;
+    if ('undefined' === typeof this._store[key]) {
+      deferred = new LockScreen.Deferred();
+      this._store[key] = [deferred];
+      return deferred.promise;
+    } else if(Array.isArray(this._store[key])) {
+      deferred = new LockScreen.Deferred();
+      this._store[key].push(deferred);
+      return deferred.promise;
+    } else {
+      return Promise.resolve(this._store[key]);
+    }
+  };
+
+  LockScreen.prototype.write = function(key, value) {
+    if (Array.isArray(this._store[key])) {
+      var fetchers = this._store[key];
+      this._store[key] = value; // First we register the value (prevent racing)
+      fetchers.forEach((deferred) => {
+        deferred.resolve(value);
+      });
+    } else {
+      this._store[key] = value;
+    }
+  };
 
   LockScreen.prototype.handleEvent =
   function ls_handleEvent(evt) {
