@@ -1,0 +1,4 @@
+export const TICK_CLOCK = 'TICK_CLOCK '
+export const SET_FORMATTER = 'SET_FORMATTER'
+export const CHANGE_WALLPAPER = 'CHANGE_WALLPAPER'
+
