@@ -7,9 +7,9 @@ export default class Wallpaper extends Component {
 	
 	render() {
 		return (
-			<div id='screenkeeper-wallpaper' style={
+			<div id='screenkeeper-wallpaper' style={{
 				backgroundImage: 'url(' + this.props.imageBlobUrl + ')'
-			}></div>
+      }}></div>
 		)
 	}
 }

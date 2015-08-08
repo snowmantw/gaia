@@ -4,6 +4,8 @@ import Wallpaper from '../components/Wallpaper'
 import DateTime from '../components/DateTime'
 import * as Actions from '../actions/Actions'
 import MinuteTimer from '../services/MinuteTimer'
+import DateTimeFormatterMonitor from '../services/DateTimeFormatterMonitor'
+import WallpaperMonitor from '../services/WallpaperMonitor'
 
 @connect(state => { return {
 	wallpaper: state.wallpaper,
@@ -19,6 +21,7 @@ export default class ScreenKeeper {
 			// XXX: Need a meta-service to pack them
 			<MinuteTimer></MinuteTimer>
 			<DateTimeFormatterMonitor></DateTimeFormatterMonitor>
+      <WallpaperMonitor></WallpaperMonitor>
 		</div>)
 	}
 	

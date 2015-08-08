@@ -1,10 +1,11 @@
 import React, { Component } from 'react'
-import ScreenKeeper from './ScreenKeeper'
 import { createRedux } from 'redux'
 import { Provider } from 'redux/react'
-import * as stores from '../stores'
+import ScreenKeeper from './ScreenKeeper'
+import dateTime from '../stores/dateTime'
+import wallpaper from '../stores/wallpaper'
 
-const redux = createRedux(stores)
+const redux = createRedux({ dateTime, wallpaper })
 
 export default class App extends Component {
 	render() {

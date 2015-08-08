@@ -19,3 +19,4 @@ export function changeWallpaper(imageBlobUrl) {
 		imageBlobUrl
 	}
 }
+
