@@ -4,9 +4,17 @@
 /* Test from lock to unlock, how long does it take. */
 setup(function(options) {
   options.phase = 'reboot';
+/*
+  options.frame = {
+    'begin': 'lockScreenLock',
+    'end': 'lockScreenUnlock'
+  };
+*/
+  options.test = 'unlock-lock';
 });
 
 afterEach(function(phase) {
+console.log('>>>>> actions called');
   return phase.device.marionette
     .startSession()
     .then(function(client) {
@@ -19,11 +27,13 @@ afterEach(function(phase) {
       };
       var deferred = new Deferred();
       deferred.promise = deferred.promise.then(function() {
+console.log('>>>>>>> in the second step of deferred');
         client.deleteSession();
       }).catch(function(err) {
         console.error(err);
         throw err;
       });
+console.log('>>>>> in the actions');
       client.switchToFrame();
       client.executeAsyncScript(function() {
         var settings = window.wrappedJSObject.navigator.mozSettings;
@@ -66,6 +76,7 @@ afterEach(function(phase) {
         if (err) {
           deferred.reject(err);
         }
+console.log('>>>>>>> resolve the deferred');
         deferred.resolve();
       });
       return deferred.promise;

@@ -4,7 +4,8 @@
 
 module.exports = function(filepath, outpath, requiredir) {
   // Developer can write their super fancy filter here.
-  if (!filepath.match(/lockscreen.js$/)) {
+  if (!filepath.match(/lockscreen.js$/) &&
+      !filepath.match(/lock_screen_window_manager.js$/)) {
     return;
   }
   var Logger = function() {
@@ -39,9 +40,10 @@ module.exports = function(filepath, outpath, requiredir) {
       performance.mark('lockScreenLock');
     })
     .done()
-    .select(filepath + ' lockScreen.prototype.unlock')
+    .select(filepath + ' LockScreenWindowManager.prototype.responseUnlock')
     .before(function() {
-      performance.mark('lockScreenUnlock');
+      // Now collect the metrics from 'lockScreenLock' to here.
+      performance.measure('fromLockToUnlock', 'lockScreenLock');
     })
     .done()
   .done();
