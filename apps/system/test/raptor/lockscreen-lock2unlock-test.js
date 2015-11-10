@@ -1,20 +1,6 @@
 'use strict';
 
-/* global setup, afterEach, marionetteScriptFinished */
-/* Test from lock to unlock, how long does it take. */
-setup(function(options) {
-  options.phase = 'reboot';
-/*
-  options.frame = {
-    'begin': 'lockScreenLock',
-    'end': 'lockScreenUnlock'
-  };
-*/
-  options.test = 'unlock-lock';
-});
-
-afterEach(function(phase) {
-console.log('>>>>> actions called');
+var actions = function(phase) {
   return phase.device.marionette
     .startSession()
     .then(function(client) {
@@ -27,13 +13,11 @@ console.log('>>>>> actions called');
       };
       var deferred = new Deferred();
       deferred.promise = deferred.promise.then(function() {
-console.log('>>>>>>> in the second step of deferred');
         client.deleteSession();
       }).catch(function(err) {
         console.error(err);
         throw err;
       });
-console.log('>>>>> in the actions');
       client.switchToFrame();
       client.executeAsyncScript(function() {
         var settings = window.wrappedJSObject.navigator.mozSettings;
@@ -76,9 +60,22 @@ console.log('>>>>> in the actions');
         if (err) {
           deferred.reject(err);
         }
-console.log('>>>>>>> resolve the deferred');
         deferred.resolve();
       });
       return deferred.promise;
   });
+};
+
+/* global setup, afterEach, marionetteScriptFinished */
+/* Test from lock to unlock, how long does it take. */
+setup(function(options) {
+  options.phase = process.env.RUNNING_PHASE;
+  options.frame = {
+    'begin': 'lockScreenLock',
+    'end': 'lockScreenUnlock'
+  };
+  options.test = 'unlock-lock';
+  options.actions = actions;
 });
+
+

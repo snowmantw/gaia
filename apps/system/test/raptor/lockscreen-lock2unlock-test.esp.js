@@ -43,7 +43,7 @@ module.exports = function(filepath, outpath, requiredir) {
     .select(filepath + ' LockScreenWindowManager.prototype.responseUnlock')
     .before(function() {
       // Now collect the metrics from 'lockScreenLock' to here.
-      performance.measure('fromLockToUnlock', 'lockScreenLock');
+      performance.mark('lockScreenUnlock');
     })
     .done()
   .done();
