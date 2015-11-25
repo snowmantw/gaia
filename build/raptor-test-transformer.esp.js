@@ -26,6 +26,9 @@ module.exports = function(filepath, outpath) {
     // Scan all *.esp files in the directory, and then require and
     // apply them to transform the code.
     var subesp = require(rulesdir + '/' + esfile);
+    if (!subesp) {
+      throw new Error('No corresponding aspect file: \'' + rulesdir + '/' + esfile + '\'');
+    }
     subesp(filepath, outpath, requirepath);
   });
 };

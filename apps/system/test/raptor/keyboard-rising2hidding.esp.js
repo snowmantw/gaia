@@ -4,10 +4,10 @@
 
 module.exports = function(filepath, outpath, requiredir) {
   // Developer can write their super fancy filter here.
-  if (!filepath.match(/lockscreen.js$/) &&
-      !filepath.match(/lock_screen_window_manager.js$/)) {
+  if (!filepath.match(/\/input_window_manager.js$/)) {
     return;
   }
+console.log('>>> found IWManager');
   var Logger = function() {
     this._writelogs = {};
   };
@@ -40,17 +40,19 @@ module.exports = function(filepath, outpath, requiredir) {
   }
   var espect = new Espect(opts);
   espect
-    .select(filepath + ' LockScreen.prototype.lock')
+    .select(filepath + ' InputWindowManager.prototype.showInputWindow')
     .before(function() {
-console.log('>>>> lockScreenLock mark');
-      performance.mark('lockScreenLock');
+console.log('>>>>>> manual mark: keyboardRisingStart');
+      performance.mark('keyboardRisingStart');
     })
     .done()
-    .select(filepath + ' LockScreenWindowManager.prototype.responseUnlock')
-    .before(function() {
-console.log('>>>> lockScreenUnlock mark');
-      // Now collect the metrics from 'lockScreenLock' to here.
-      performance.mark('lockScreenUnlock');
+    .select(filepath + ' handleEvent')
+    .before(function(evt) {
+      if ('keyboardhide' === evt.type) {
+console.log('>>>>> manunal keyboardHiddingEnd');
+        // Now collect the metrics from 'lockScreenLock' to here.
+        performance.mark('keyboardHiddingEnd');
+      }
     })
     .done()
   .done();
@@ -60,7 +62,7 @@ console.log('>>>> lockScreenUnlock mark');
   } else {
     Object.keys(logger._writelogs).forEach(function(filepath) {
       var info = logger._writelogs[filepath];
-      console.log('|lock2unlock.esp| Successfully wove ', filepath);
+      console.log('|rising2hdding.esp| Successfully wove ', filepath);
     });
   }
 };

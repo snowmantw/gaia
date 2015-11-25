@@ -5,14 +5,14 @@
 var pth = require('path');
 var _req = require;
 var raptorPath = pth.dirname(require.main.filename) + pth.sep + '..' + pth.sep;
-var raptorNodePath = raptorPath + pth.sep + 'node_modules' + pth.sep;
+var raptorNodePath = raptorPath + 'node_modules' + pth.sep;
 
 // The workaround is to find out where the Raptor is, and then to find packages
 // from that. However, there are some exceptions need to be dealt with.
 require = function(path) {
   // Raptor + '/' + path
   try {
-    return _req(raptorPath + pth.sep + path); // relative
+    return _req(raptorPath + path); // relative
   } catch(e1) {
   try {
     return _req(raptorNodePath + pth.sep + path); // Package/node_modules
