@@ -2,7 +2,7 @@
 
 var Messages = require('../../../sms/test/marionette/lib/messages.js');
 var SETTINGS_APP = 'app://settings.gaiamobile.org';
-var SMS_APP = 'app://sms.gaiamobile.org';
+var CALENDAR_APP = 'app://calendar.gaiamobile.org';
 
 var actions = function(phase) {
   return phase.device.marionette
@@ -35,7 +35,7 @@ var actions = function(phase) {
       });
 
       var sys;
-      var settings, sms, smsLib;
+      var calendar;
       var quarterWidth, topHalf;
 
       var setup = function() {
@@ -44,65 +44,32 @@ var actions = function(phase) {
         client.loader = new Loader(client);
         console.error('>>>>>> client.apps: ', typeof client.apps)
         //client.apps.mgmt.prepareClient();
-console.error('>>>>> setup 1');
         sys = getAppClass('system');
         //sys.waitForStartup();
-console.error('>>>>> setup 2');
-        settings = sys.waitForLaunch(SETTINGS_APP);
-console.error('>>>>> setup 3');
-        sms = sys.waitForLaunch(SMS_APP);
-console.error('>>>>> setup 4');
-
-        smsLib = Messages.create(client);
-console.error('>>>>> setup 5');
-
-        // Making sure the opening transition for the sms app is over.
-        client.waitFor(function() {
-          return sms.displayed() && !settings.displayed();
-        });
-console.error('>>>>> setup 6');
+        calendar = sys.waitForLaunch(CALENDAR_APP);
 
         var width = client.executeScript(function() {
           return window.innerWidth;
         });
-console.error('>>>>> setup 7');
         quarterWidth = width / 4;
-console.error('>>>>> setup 8');
 
         var height = client.executeScript(function() {
           return window.innerHeight;
         });
-console.error('>>>>> setup 9');
         topHalf = height / 2 - 100;
       };
-console.error('>>>>> setup');
       setup();
-console.error('>>>>> setup done');
-
-console.error('>>>>> switchframe (sms)');
-      // Focusing the keyboard in the sms app
-      client.switchToFrame(sms);
-console.error('>>>>> switchframe (sms) done');
-console.error('>>>>> initialHeight');
+      // Focusing the keyboard in the calendar app
+      client.switchToFrame(calendar);
+      client.findElement('a[href="/event/add/"').tap();
+      client.findElement('input[name="title"]').tap();
       var initialHeight = client.executeScript(function() {
         return window.wrappedJSObject.innerHeight;
       });
-console.error('>>>>> initialHeight done');
-console.error('>>>>> navigateToComposer');
-      smsLib.Inbox.navigateToComposer();
-console.error('>>>>> navigateToComposer done');
-console.error('>>>>> top()');
-      var composer = smsLib.Composer;
-      composer.messageInput.tap();
-console.error('>>>>> top() done');
-
-console.error('>>>>> switchToFrame ');
       client.switchToFrame();
-console.error('>>>>> switchToFrame done');
-console.error('>>>>> waitForKeyboard');
       sys.waitForKeyboard();
-console.error('>>>>> waitForKeyboard done');
-
+      client.switchToFrame(calendar);
+      client.findElement('#modify-event-header button.save').tap();
       deferred.resolve();
       return deferred.promise;
   });
