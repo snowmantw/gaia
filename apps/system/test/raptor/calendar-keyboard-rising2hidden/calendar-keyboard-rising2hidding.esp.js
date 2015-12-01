@@ -7,7 +7,6 @@ module.exports = function(filepath, outpath, requiredir) {
   if (!filepath.match(/\/input_window_manager.js$/)) {
     return;
   }
-console.log('>>> found IWManager');
   var Logger = function() {
     this._writelogs = {};
   };
@@ -42,16 +41,21 @@ console.log('>>> found IWManager');
   espect
     .select(filepath + ' InputWindowManager.prototype.showInputWindow')
     .before(function() {
-console.log('>>>>>> manual mark: keyboardRisingStart');
       performance.mark('keyboardRisingStart');
     })
     .done()
-    .select(filepath + ' handleEvent')
+    .select(filepath + ' InputWindowManager.prototype.hideInputWindow')
+    .before(function() {
+      performance.mark('keyboardHiddingStart');
+    })
+    .done()
+    .select(filepath + ' InputWindowManager.prototype.handleEvent')
     .before(function(evt) {
-      if ('keyboardhide' === evt.type) {
-console.log('>>>>> manunal keyboardHiddingEnd');
+      if ('input-appclosed' === evt.type) {
         // Now collect the metrics from 'lockScreenLock' to here.
         performance.mark('keyboardHiddingEnd');
+      } else if ('input-appopened' === evt.type) {
+        performance.mark('keyboardRisingEnd');
       }
     })
     .done()
@@ -62,7 +66,7 @@ console.log('>>>>> manunal keyboardHiddingEnd');
   } else {
     Object.keys(logger._writelogs).forEach(function(filepath) {
       var info = logger._writelogs[filepath];
-      console.log('|rising2hdding.esp| Successfully wove ', filepath);
+      console.log('|calendar-rising2hdding.esp| Successfully wove ', filepath);
     });
   }
 };

@@ -129,6 +129,7 @@ Running.prototype.capture = function() {
       return;
     }
 
+
     if (entry.name === this.endMark) {
       this.endMarkReached = true;
     }
