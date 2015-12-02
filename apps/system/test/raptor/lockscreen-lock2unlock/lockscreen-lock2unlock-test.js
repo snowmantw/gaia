@@ -4,6 +4,21 @@ var actions = function(phase) {
   return phase.device.marionette
     .startSession()
     .then(function(client) {
+      var Mgmt = require(__dirname +
+        '/../../../../../tests/jsmarionette/plugins/marionette-apps/lib/mgmt.js');
+      var mgmt = new Mgmt(client);
+      mgmt.prepareClient();
+      var getAppClass = function(app, region) {
+        region = region || app;
+        var AppClass = require(
+        __dirname + '/../../../../' + app + '/test/marionette/lib/' + region);
+        return new AppClass(client);
+      }
+      var Loader = require(__dirname +
+        '/../../../../../shared/test/integration/marionette_loader.js');
+      client.loader = new Loader(client);
+      var sys = getAppClass('system');
+      sys.waitForFullyLoaded();
       var Deferred = function() {
         this.promise = new Promise((function(res, rej) {
           this.resolve = res;
@@ -19,17 +34,33 @@ var actions = function(phase) {
         throw err;
       });
       client.switchToFrame();
-      client.executeAsyncScript(function() {
+      // --- if not enabled ---
+      var enabled = client.executeAsyncScript(function() {
         var settings = window.wrappedJSObject.navigator.mozSettings;
         var lock = settings.createLock();
-        lock.set({
-          'lockscreen.enabled': true
-        }).then(function() {
-          marionetteScriptFinished(null, 'success');
+        lock.get('lockscreen.enabled').then(function(val) {
+          marionetteScriptFinished(val['lockscreen.enabled'], 'success');
         }).catch(function(err) {
           marionetteScriptFinished(err, 'falied');
         });
       });
+
+      // ---- enable it ----
+      if (!enabled) {
+        client.executeAsyncScript(function() {
+          var settings = window.wrappedJSObject.navigator.mozSettings;
+          var lock = settings.createLock();
+          lock.set({
+            'lockscreen.enabled': true
+          }).then(function() {
+            marionetteScriptFinished(null, 'success');
+          }).catch(function(err) {
+            marionetteScriptFinished(err, 'falied');
+          });
+        });
+      }
+
+      // ---- start the test ----
       client.executeScript(function() {
         window.wrappedJSObject.Service.request('lock');
       });
@@ -46,6 +77,9 @@ var actions = function(phase) {
           return !window.wrappedJSObject.Service.query('locked');
         });
       });
+      // ---- end the test ----
+
+      // ---- reset to not enabled ----
       client.executeAsyncScript(function() {
         var settings = window.wrappedJSObject.navigator.mozSettings;
         var lock = settings.createLock();

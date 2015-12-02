@@ -1,6 +1,6 @@
 'use strict';
 
-var Messages = require('../../../sms/test/marionette/lib/messages.js');
+var Messages = require('../../../../sms/test/marionette/lib/messages.js');
 var SETTINGS_APP = 'app://settings.gaiamobile.org';
 var CALENDAR_APP = 'app://calendar.gaiamobile.org';
 
@@ -9,13 +9,13 @@ var actions = function(phase) {
     .startSession()
     .then(function(client) {
       var Mgmt = require(__dirname +
-        '/../../../../tests/jsmarionette/plugins/marionette-apps/lib/mgmt.js');
+        '/../../../../../tests/jsmarionette/plugins/marionette-apps/lib/mgmt.js');
       var mgmt = new Mgmt(client);
       mgmt.prepareClient();
       var getAppClass = function(app, region) {
         region = region || app;
         var AppClass = require(
-        __dirname + '/../../../' + app + '/test/marionette/lib/' + region);
+        __dirname + '/../../../../' + app + '/test/marionette/lib/' + region);
         return new AppClass(client);
       }
 
@@ -40,7 +40,7 @@ var actions = function(phase) {
 
       var setup = function() {
         var Loader = require(__dirname +
-          '/../../../../shared/test/integration/marionette_loader.js');
+          '/../../../../../shared/test/integration/marionette_loader.js');
         client.loader = new Loader(client);
         //client.apps.mgmt.prepareClient();
         sys = getAppClass('system');
