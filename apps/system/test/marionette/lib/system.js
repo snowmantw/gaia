@@ -379,24 +379,14 @@ System.prototype = {
   },
 
   waitForLaunch: function(url) {
-console.error('>>>>> >>>>>> waitForLaunch 1', this.client.apps.launch.toString());
-for (var i in this.client.apps) {
-  console.error('>>>> {} {} {} i: ', i);
-}
     this.client.apps.launch(url);
-console.error('>>>>> >>>>>> waitForLaunch 2');
     var iframe = this.getAppIframe(url);
-console.error('>>>>> >>>>>> waitForLaunch 3');
     this.client.waitFor(function() {
       return iframe.displayed();
     });
-console.error('>>>>> >>>>>> waitForLaunch 4');
-
     iframe.ariaDisplayed = function() {
       return this.getAttribute('aria-hidden') !== 'true';
     };
-console.error('>>>>> >>>>>> waitForLaunch 5');
-
     return iframe;
   },
 
