@@ -41,26 +41,66 @@ var actions = function(phase) {
       });
       sys.waitForFullyLoaded();
       client.switchToFrame();
+      // XXX: monkey patch the actions to solve client version issue.
+      var originalPerform = utilityTray.actions.perform;
+      utilityTray.actions.perform = function(callback) {
+        var cmd = {
+          name: 'actionChain',
+          parameters: {
+            chain: this.actionChain,
+            nextId: this.currentId
+          }
+        };
+        /// XXX: MarionetteJS changed this interface...
+if (!callback) { callback = function() {}; }
+        this.currentId = this.client._sendCommand(cmd, 'value', callback);
+        this.actionChain = [];
+        return this;
+      };
       utilityTray.swipeDown();
       utilityTray.waitForOpened();
+
+      var alreadytoggled = client.executeScript(function() {
+        return null !== window.wrappedJSObject.document
+          .querySelector('#quick-settings-bluetooth[data-enabled]');
+      });
+      // Rest it first (if it's necessary).
+      if (alreadytoggled) {
+        client.findElement(buttonSelector).tap();
+        client.waitFor(function() {
+          return client.executeScript(function() {
+            return null === window.wrappedJSObject.document
+              .querySelector('#quick-settings-bluetooth[data-enabled]');
+          });
+        });
+      }
+
+      // ---- start ----
       client.executeScript(function() {
-if (!window.wrappedJSObject.performance) {
-  throw new Error('>>>> NO WRAPPED PERFORMANCE');
-}
         window.wrappedJSObject.performance.mark('beforeButtonToggled');
       });
       client.findElement(buttonSelector).tap();
       client.waitFor(function() {
-        return null !== window.wrappedJSObject.document
-          .querySelector('#quick-settings-bluetooth[data-enabled]');
+        return client.executeScript(function() {
+          return null !== window.wrappedJSObject.document
+            .querySelector('#quick-settings-bluetooth[data-enabled]');
+        });
       });
 
       client.executeScript(function() {
-if (!window.wrappedJSObject.performance) {
-  throw new Error('>>>> NO WRAPPED PERFORMANCE');
-}
         window.wrappedJSObject.performance.mark('afterButtonToggled');
       });
+      // ---- end ----
+
+      // Reset Bluetooth state.
+      client.findElement(buttonSelector).tap();
+      client.waitFor(function() {
+        return client.executeScript(function() {
+          return null === window.wrappedJSObject.document
+            .querySelector('#quick-settings-bluetooth[data-enabled]');
+        });
+      });
+
       deferred.resolve();
       return deferred.promise;
   });
