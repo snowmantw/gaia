@@ -60,12 +60,12 @@ if (!callback) { callback = function() {}; }
       utilityTray.swipeDown();
       utilityTray.waitForOpened();
 
-      var alreadytoggled = client.executeScript(function() {
+      var alreadyTurnOn = client.executeScript(function() {
         return null !== window.wrappedJSObject.document
           .querySelector('#quick-settings-bluetooth[data-enabled]');
       });
       // Rest it first (if it's necessary).
-      if (alreadytoggled) {
+      if (alreadyTurnOn) {
         client.findElement(buttonSelector).tap();
         client.waitFor(function() {
           return client.executeScript(function() {
@@ -77,7 +77,7 @@ if (!callback) { callback = function() {}; }
 
       // ---- start ----
       client.executeScript(function() {
-        window.wrappedJSObject.performance.mark('beforeButtonToggled');
+        window.wrappedJSObject.performance.mark('beforeButtonTurnOn');
       });
       client.findElement(buttonSelector).tap();
       client.waitFor(function() {
@@ -88,9 +88,12 @@ if (!callback) { callback = function() {}; }
       });
 
       client.executeScript(function() {
-        window.wrappedJSObject.performance.mark('afterButtonToggled');
+        window.wrappedJSObject.performance.mark('afterButtonTurnOn');
       });
-      // ---- end ----
+
+      client.executeScript(function() {
+        window.wrappedJSObject.performance.mark('beforeButtonTurnOff');
+      });
 
       // Reset Bluetooth state.
       client.findElement(buttonSelector).tap();
@@ -100,6 +103,12 @@ if (!callback) { callback = function() {}; }
             .querySelector('#quick-settings-bluetooth[data-enabled]');
         });
       });
+
+      client.executeScript(function() {
+        window.wrappedJSObject.performance.mark('afterButtonTurnOff');
+      });
+
+      // ---- end ----
 
       deferred.resolve();
       return deferred.promise;
@@ -111,8 +120,8 @@ if (!callback) { callback = function() {}; }
 setup(function(options) {
   options.phase = process.env.RUNNING_PHASE;
   options.frame = {
-    'begin': 'beforeButtonToggled',
-    'end': 'afterButtonToggled'
+    'begin': 'beforeButtonTurnOn',
+    'end': 'afterButtonTurnOff'
   };
   options.test = 'button-toggle';
   options.actions = actions;
